@@ -79,10 +79,11 @@ body {
     padding: 10px 20px;
     border-radius: 25px;
     border: 2px solid var(--pokka-cyan);
-    font-size: 0.8em;
+    font-size: 1em;
     transition: all 0.3s ease;
     box-shadow: 0 0 15px rgba(64, 224, 208, 0.2);
     cursor: pointer;
+    font-family: 'Press Start 2P', cursive;
 }
 
 .nav-button:hover {
@@ -90,6 +91,12 @@ body {
     color: var(--pokka-dark);
     transform: scale(1.05);
     box-shadow: 0 0 20px rgba(64, 224, 208, 0.5);
+}
+
+/* Game control buttons (Start Game, How to Play, Leaderboard) */
+#startBtn, #tutorialBtn, #leaderboardBtn {
+    font-family: 'One Little Font', cursive;
+    font-size: 1.2em;
 }
 
 /* Score Container */
