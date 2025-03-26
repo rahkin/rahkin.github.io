@@ -285,6 +285,7 @@ body {
     .game-container {
         padding: 1rem;
         margin: 10px;
+        max-width: 100vw;
     }
 
     .nav-links {
@@ -296,19 +297,64 @@ body {
     .nav-button {
         width: 100%;
         text-align: center;
+        padding: 15px 20px;
+        font-size: 0.9em;
     }
     
     .mobile-controls {
         display: flex;
+        margin-top: 15px;
+        position: relative;
+        z-index: 100;
+    }
+
+    .controls-row button {
+        width: 70px;
+        height: 70px;
+        font-size: 2em;
+        background: rgba(0, 0, 0, 0.85);
+        border: 3px solid var(--pokka-cyan);
+        box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
+        margin: 5px;
+    }
+    
+    .controls-row button:active {
+        background: var(--background-gradient);
+        color: var(--pokka-dark);
+        transform: scale(0.95);
     }
     
     #gameCanvas {
         width: 100%;
         height: auto;
+        max-height: 80vh;
+        object-fit: contain;
+        touch-action: none;
+    }
+
+    .score-container {
+        font-size: 1em;
+        margin: 0.5rem 0;
     }
 
     .modal-content {
         width: 90%;
         margin: 0 10px;
+        max-height: 90vh;
+        overflow-y: auto;
     }
+
+    .menu-button {
+        padding: 12px 20px;
+        margin: 8px;
+        min-width: 120px;
+    }
+}
+
+/* Prevent scrolling while touching game controls */
+body.playing {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 } 
