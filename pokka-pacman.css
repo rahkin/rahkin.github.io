@@ -1,15 +1,15 @@
 /* Pokka Theme Colors */
 :root {
-    --pokka-pink: #ffb6c1;         /* Softer pink from the top */
-    --pokka-skin: #ffdab9;         /* Warm skin tone */
-    --pokka-dark: #2a1f1d;         /* Warm dark brown */
-    --pokka-accent: #ff9a9e;       /* Blush pink */
-    --pokka-warm-light: #fff5f5;   /* Warm white */
-    --pokka-shadow: rgba(42, 31, 29, 0.2); /* Warm shadow */
-    --background-gradient: linear-gradient(135deg, var(--pokka-dark) 0%, #3a2f2d 100%);
+    --pokka-orange: #FFA500;       /* Orange accent from image */
+    --pokka-cyan: #40E0D0;         /* Turquoise/cyan accent */
+    --pokka-dark: #000000;         /* Dark background */
+    --pokka-pink: #ff9ec5;         /* Pink accent for characters */
+    --pokka-white: #FFFFFF;        /* White text */
+    --pokka-shadow: rgba(0, 0, 0, 0.3);
+    --background-gradient: linear-gradient(135deg, var(--pokka-orange) 0%, var(--pokka-cyan) 100%);
     --pokka-grid: rgba(255, 255, 255, 0.1);
-    --text-light: #ffffff;
-    --modal-bg: rgba(0, 0, 0, 0.9);
+    --text-light: var(--pokka-white);
+    --modal-bg: rgba(0, 0, 0, 0.95);
 }
 
 /* Navigation Styles */
@@ -22,22 +22,22 @@
 }
 
 .nav-button {
-    background: rgba(42, 31, 29, 0.85);
-    color: var(--pokka-pink);
+    background: rgba(0, 0, 0, 0.85);
+    color: var(--pokka-white);
     text-decoration: none;
     padding: 10px 20px;
     border-radius: 25px;
-    border: 2px solid var(--pokka-pink);
+    border: 2px solid var(--pokka-cyan);
     font-size: 1.1em;
     transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(255, 182, 193, 0.2);
+    box-shadow: 0 0 15px rgba(64, 224, 208, 0.2);
 }
 
 .nav-button:hover {
-    background: var(--pokka-pink);
+    background: var(--background-gradient);
     color: var(--pokka-dark);
     transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(255, 182, 193, 0.5);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.5);
 }
 
 /* Global Styles */
@@ -56,19 +56,25 @@ body {
     justify-content: center;
     align-items: center;
     font-family: 'One Little Font', sans-serif;
-    background: url('assets/images/body_background.png') center center fixed;
-    background-size: cover;
-    color: var(--pokka-warm-light);
+    background: var(--pokka-dark);
+    background-image: 
+        linear-gradient(45deg, var(--pokka-grid) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--pokka-grid) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--pokka-grid) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--pokka-grid) 75%);
+    background-size: 20px 20px;
+    color: var(--pokka-white);
 }
 
 /* Game Container */
 .game-container {
-    background: rgba(42, 31, 29, 0.85);
+    background: rgba(0, 0, 0, 0.85);
     padding: 2rem;
     border-radius: 20px;
-    box-shadow: 0 0 20px rgba(255, 182, 193, 0.3);
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
     max-width: 90vw;
     margin: 20px;
+    border: 2px solid var(--pokka-cyan);
 }
 
 /* Game Header */
@@ -86,16 +92,18 @@ body {
 
 /* Score Container */
 .score-container {
-    color: var(--pokka-warm-light);
+    color: var(--pokka-white);
     font-size: 1.5em;
     text-align: center;
     margin: 1rem 0;
-    text-shadow: 1px 1px 2px var(--pokka-shadow);
+    text-shadow: 2px 2px 4px var(--pokka-shadow);
 }
 
 .score-update {
     animation: scoreUpdate 0.3s ease;
-    color: var(--pokka-pink);
+    background: var(--background-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 /* Game Area */
@@ -135,9 +143,9 @@ body {
 }
 
 .menu-button {
-    background: var(--pokka-pink);
-    color: var(--pokka-dark);
-    border: none;
+    background: var(--pokka-dark);
+    color: var(--pokka-white);
+    border: 2px solid var(--pokka-cyan);
     padding: 0.8rem 1.5rem;
     border-radius: 25px;
     font-size: 1.2em;
@@ -148,9 +156,10 @@ body {
 }
 
 .menu-button:hover {
-    background: var(--pokka-accent);
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--pokka-shadow);
+    box-shadow: 0 4px 12px rgba(64, 224, 208, 0.5);
 }
 
 /* Modals */
@@ -173,15 +182,17 @@ body {
     background: var(--pokka-dark);
     padding: 2rem;
     border-radius: 20px;
-    border: 2px solid var(--pokka-pink);
+    border: 2px solid var(--pokka-cyan);
     text-align: center;
     min-width: 300px;
-    box-shadow: 0 0 30px var(--pokka-shadow);
+    box-shadow: 0 0 30px rgba(64, 224, 208, 0.3);
 }
 
 .modal-content h2 {
-    color: var(--pokka-pink);
-    text-shadow: 1px 1px 2px var(--pokka-shadow);
+    background: var(--background-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
     font-size: 1.5em;
     margin-bottom: 1rem;
 }
@@ -209,11 +220,11 @@ body {
 
 /* Player Name Input */
 #playerName {
-    background: var(--pokka-warm-light);
-    border: 2px solid var(--pokka-pink);
+    background: var(--pokka-dark);
+    border: 2px solid var(--pokka-cyan);
     padding: 0.5rem 1rem;
     font-size: 1.1em;
-    color: var(--pokka-dark);
+    color: var(--pokka-white);
     border-radius: 25px;
     margin: 1rem 0;
     font-family: 'One Little Font', cursive;
@@ -260,9 +271,9 @@ body {
     }
     
     .mobile-controls button {
-        background: rgba(255, 182, 193, 0.2);
-        border: 2px solid var(--pokka-pink);
-        color: var(--pokka-pink);
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid var(--pokka-cyan);
+        color: var(--pokka-white);
         font-size: 1.5em;
         padding: 15px;
         margin: 5px;
@@ -272,7 +283,7 @@ body {
     }
     
     .mobile-controls button:hover {
-        background: var(--pokka-pink);
+        background: var(--background-gradient);
         color: var(--pokka-dark);
     }
 }
@@ -303,4 +314,19 @@ body {
     0% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
     100% { transform: translateY(0); }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.header-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    max-height: 150px;
+    object-fit: contain;
 } 

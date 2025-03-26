@@ -11,20 +11,18 @@
 </head>
 <body>
     <div class="game-container">
-        <header class="game-header">
-            <h1>PokkaMan</h1>
-        </header>
+        <div class="header">
+            <img src="assets/images/pokka_header.png" alt="PokkaMan Header" class="header-image">
+        </div>
+        <div class="score-container">
+            Score: <span id="score">0</span>
+        </div>
 
         <nav class="nav-links">
             <a href="https://aiai.now/" class="nav-button" target="_blank">aiai.now</a>
             <a href="https://pancakeswap.finance/swap?outputCurrency=0xb82f36fb31bF0Be873879C031DE4150d40AfDda9&inputCurrency=BNB" class="nav-button" target="_blank">Trade $pokka</a>
             <a href="https://x.com/Pokka_AIAI" class="nav-button" target="_blank">Pokka's X Profile</a>
         </nav>
-
-        <div class="score-container">
-            <span>Score: </span>
-            <span id="score">0</span>
-        </div>
 
         <div class="game-area">
             <canvas id="gameCanvas"></canvas>
