@@ -162,10 +162,22 @@ function setupEventListeners() {
     canvas.addEventListener('keydown', handleKeyPress);
     
     // Mobile controls
-    document.getElementById('upBtn').addEventListener('click', () => handleDirection('up'));
-    document.getElementById('downBtn').addEventListener('click', () => handleDirection('down'));
-    document.getElementById('leftBtn').addEventListener('click', () => handleDirection('left'));
-    document.getElementById('rightBtn').addEventListener('click', () => handleDirection('right'));
+    document.getElementById('upBtn').addEventListener('click', () => {
+        handleDirection('up');
+        canvas.focus(); // Focus canvas when mobile controls are used
+    });
+    document.getElementById('downBtn').addEventListener('click', () => {
+        handleDirection('down');
+        canvas.focus();
+    });
+    document.getElementById('leftBtn').addEventListener('click', () => {
+        handleDirection('left');
+        canvas.focus();
+    });
+    document.getElementById('rightBtn').addEventListener('click', () => {
+        handleDirection('right');
+        canvas.focus();
+    });
     
     // Menu buttons
     document.getElementById('startBtn').addEventListener('click', startGame);
@@ -182,6 +194,23 @@ function setupEventListeners() {
     // Add click handler to canvas to ensure focus
     canvas.addEventListener('click', () => {
         canvas.focus();
+    });
+    
+    // Add focus handler to show/hide the message
+    canvas.addEventListener('focus', () => {
+        // Force a redraw to remove the message
+        if (gameState.isPlaying) {
+            drawGame();
+        }
+    });
+    
+    // Handle focus for the whole window
+    window.addEventListener('keydown', (event) => {
+        // If a game control key is pressed and canvas isn't focused
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key) && 
+            document.activeElement !== canvas) {
+            canvas.focus();
+        }
     });
 }
 
@@ -240,6 +269,9 @@ function startGame() {
     updateScore();
     initializeGameObjects();
     
+    // Automatically focus the canvas when game starts
+    canvas.focus();
+    
     // Start the game loop
     console.log('Starting game loop...');
     requestAnimationFrame(function gameLoop() {
@@ -247,6 +279,17 @@ function startGame() {
         
         updateGame();
         drawGame();
+        
+        // Check if canvas has focus and show message if it doesn't
+        if (document.activeElement !== canvas) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+            ctx.fillStyle = '#ff9ec5';
+            ctx.font = '16px "One Little Font"';
+            ctx.textAlign = 'center';
+            ctx.fillText('Click here to control Pokka!', canvas.width / 2, canvas.height - 15);
+        }
+        
         requestAnimationFrame(gameLoop);
     });
 
