@@ -276,6 +276,33 @@ body {
     filter: drop-shadow(0 0 10px var(--pokka-cyan));
 }
 
+/* Audio Controls */
+.audio-controls {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.audio-controls .nav-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
+
+.music-icon {
+    font-size: 1.2em;
+}
+
+.music-text {
+    font-family: 'One Little Font', cursive;
+}
+
+.audio-controls .nav-button.playing .music-icon {
+    animation: pulse 1s infinite;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     body {
