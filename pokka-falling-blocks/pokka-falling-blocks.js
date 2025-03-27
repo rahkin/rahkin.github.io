@@ -87,6 +87,11 @@ class Game {
         const nameInput = document.getElementById('nameInput');
         const overlay = document.querySelector('.overlay');
         const input = document.getElementById('playerNameInput');
+        const submitButton = document.getElementById('submitName');
+        
+        // Remove any existing event listeners
+        const newSubmitButton = submitButton.cloneNode(true);
+        submitButton.parentNode.replaceChild(newSubmitButton, submitButton);
         
         // Show the modal and overlay
         nameInput.classList.add('visible');
@@ -116,25 +121,14 @@ class Game {
             // Start the game
             this.startGame(name);
         };
-        
+
         // Add event listeners
-        const submitButton = document.getElementById('submitName');
-        const submitHandler = () => {
-            handleSubmit();
-            submitButton.removeEventListener('click', submitHandler);
-            input.removeEventListener('keypress', keypressHandler);
-        };
-        
-        const keypressHandler = (e) => {
+        newSubmitButton.addEventListener('click', handleSubmit);
+        input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 handleSubmit();
-                submitButton.removeEventListener('click', submitHandler);
-                input.removeEventListener('keypress', keypressHandler);
             }
-        };
-        
-        submitButton.addEventListener('click', submitHandler);
-        input.addEventListener('keypress', keypressHandler);
+        });
     }
 
     startGame(playerName) {
@@ -159,6 +153,10 @@ class Game {
         // Show leaderboard
         document.getElementById('leaderboard').classList.remove('hidden');
         document.getElementById('leaderboard').classList.add('visible');
+        
+        // Reset game timing
+        this.dropInterval = 1000;
+        this.lastDrop = Date.now();
     }
 
     drawStartScreen() {
