@@ -336,11 +336,17 @@ class Game {
         
         // Check for game over after landing
         if (this.gameOver) {
-            this.addToLeaderboard();
+            if (this.score > 0) {
+                this.saveScore().then(() => {
+                    this.updateLeaderboardDisplay();
+                });
+            }
         }
         
-        // Spawn new piece
-        this.spawnPiece();
+        // Spawn new piece if not game over
+        if (!this.gameOver) {
+            this.spawnPiece();
+        }
     }
     
     isValidMove(offsetX, offsetY) {
@@ -486,11 +492,15 @@ class Game {
 
     async loadLeaderboard() {
         try {
+            console.log('Loading leaderboard...');
             const response = await fetch('https://api.pokka.ai/scores/falling-blocks');
             if (response.ok) {
                 const data = await response.json();
-                this.leaderboard = data || [];
+                console.log('Leaderboard data:', data);
+                this.leaderboard = Array.isArray(data) ? data : [];
                 this.updateLeaderboardDisplay();
+            } else {
+                console.error('Failed to load leaderboard:', await response.text());
             }
         } catch (error) {
             console.error('Failed to load leaderboard:', error);
@@ -499,21 +509,29 @@ class Game {
 
     async saveScore() {
         try {
+            const scoreData = {
+                name: this.playerName,
+                score: this.score,
+                date: new Date().toISOString()
+            };
+
+            console.log('Saving score:', scoreData);
+
             const response = await fetch('https://api.pokka.ai/scores/falling-blocks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    name: this.playerName,
-                    score: this.score,
-                    date: new Date().toISOString()
-                })
+                body: JSON.stringify(scoreData)
             });
             
             if (response.ok) {
+                console.log('Score saved successfully');
                 // Refresh leaderboard after saving
                 await this.loadLeaderboard();
+            } else {
+                console.error('Failed to save score:', await response.text());
             }
         } catch (error) {
             console.error('Failed to save score:', error);
@@ -530,7 +548,7 @@ class Game {
         }
 
         const list = document.createElement('ol');
-        this.leaderboard
+        [...this.leaderboard] // Create a copy to avoid modifying the original
             .sort((a, b) => b.score - a.score)
             .slice(0, MAX_LEADERBOARD_ENTRIES)
             .forEach((entry, index) => {
@@ -545,12 +563,6 @@ class Game {
                 list.appendChild(item);
             });
         leaderboardElement.appendChild(list);
-    }
-
-    addToLeaderboard() {
-        if (this.score > 0) {
-            this.saveScore();
-        }
     }
 }
 
