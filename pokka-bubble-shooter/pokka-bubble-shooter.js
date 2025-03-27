@@ -195,6 +195,12 @@ class Game {
             this.activeBubble.x += this.activeBubble.dx;
             this.activeBubble.y += this.activeBubble.dy;
             
+            // Check if bubble went too far up or down
+            if (this.activeBubble.y > CANVAS_HEIGHT || this.activeBubble.y < 0) {
+                this.snapBubbleToGrid();
+                return;
+            }
+            
             // Check wall collisions
             if (this.activeBubble.x <= BUBBLE_RADIUS || 
                 this.activeBubble.x >= CANVAS_WIDTH - BUBBLE_RADIUS) {
@@ -231,6 +237,12 @@ class Game {
     }
     
     snapBubbleToGrid() {
+        // Ensure bubble is within bounds before snapping
+        this.activeBubble.x = Math.max(BUBBLE_RADIUS, 
+            Math.min(CANVAS_WIDTH - BUBBLE_RADIUS, this.activeBubble.x));
+        this.activeBubble.y = Math.max(BUBBLE_RADIUS, 
+            Math.min(CANVAS_HEIGHT - BUBBLE_RADIUS, this.activeBubble.y));
+            
         // Find the nearest grid position
         let nearestRow = Math.round(this.activeBubble.y / (BUBBLE_SPACING * 0.866));
         let nearestCol = Math.round((this.activeBubble.x - (nearestRow % 2 ? BUBBLE_RADIUS : 0)) / BUBBLE_SPACING);
@@ -238,6 +250,11 @@ class Game {
         // Ensure the bubble doesn't go outside the grid
         nearestRow = Math.max(0, Math.min(nearestRow, GRID_ROWS - 1));
         nearestCol = Math.max(0, Math.min(nearestCol, GRID_COLS - 1));
+        
+        // If bubble is in top half of screen, force it to attach to top row if no collision
+        if (this.activeBubble.y < CANVAS_HEIGHT / 2 && this.bubbles.length === 0) {
+            nearestRow = 0;
+        }
         
         // Check if position is already occupied
         const isOccupied = this.bubbles.some(bubble => 
@@ -258,6 +275,7 @@ class Game {
                 [-1, -1], // Above Left
             ];
             
+            let found = false;
             for (const [dy, dx] of neighbors) {
                 const newRow = nearestRow + dy;
                 const newCol = nearestCol + dx;
@@ -276,8 +294,15 @@ class Game {
                 if (isFree) {
                     nearestRow = newRow;
                     nearestCol = newCol;
+                    found = true;
                     break;
                 }
+            }
+            
+            // If no free position found, force to top row
+            if (!found) {
+                nearestRow = 0;
+                nearestCol = Math.floor(GRID_COLS / 2);
             }
         }
         
