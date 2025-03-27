@@ -112,6 +112,8 @@
         #nextCanvas {
             border: 2px solid var(--pokka-cyan);
             background: var(--pokka-dark);
+            width: 120px;
+            height: 120px;
         }
 
         .controls {
@@ -148,6 +150,17 @@
             transform: scale(1.05);
         }
 
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         #leaderboard {
             margin-top: 20px;
             padding: 20px;
@@ -168,13 +181,7 @@
             text-transform: uppercase;
         }
 
-        #leaderboard ol {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        #leaderboard li {
+        #leaderboard p {
             margin: 8px 0;
             padding: 8px;
             border-radius: 3px;
@@ -183,7 +190,7 @@
             font-size: 16px;
         }
 
-        #leaderboard li:hover {
+        #leaderboard p:hover {
             background-color: rgba(13, 255, 243, 0.2);
             border-color: var(--pokka-cyan);
             transform: scale(1.02);
@@ -251,6 +258,7 @@
 
         .overlay.visible {
             display: block;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         @media (max-width: 768px) {
@@ -285,22 +293,6 @@
             }
         }
 
-        .button-container {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 10px 0;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        #leaderboard.visible {
-            display: block;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -320,9 +312,7 @@
     </nav>
 
     <div class="game-container">
-        <div id="gameContainer">
-            <canvas id="gameCanvas"></canvas>
-        </div>
+        <canvas id="gameCanvas"></canvas>
         <div class="game-info">
             <div class="score-container">
                 Score: <span id="score">0</span>
@@ -332,11 +322,11 @@
             </div>
             <div class="next-piece">
                 <h3>Next Piece</h3>
-                <canvas id="nextCanvas" width="120" height="120"></canvas>
+                <canvas id="nextCanvas"></canvas>
             </div>
             <div class="button-container">
                 <button id="startButton">Start Game</button>
-                <button id="showLeaderboard">Leaderboard</button>
+                <button id="showLeaderboard">Show Leaderboard</button>
             </div>
             
             <div id="leaderboard" class="hidden">
