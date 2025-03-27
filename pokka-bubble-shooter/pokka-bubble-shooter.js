@@ -332,6 +332,43 @@ class Game {
         this.activeBubble = null;
     }
     
+    getNeighbors(bubble) {
+        const neighbors = [];
+        // Define directions for odd and even rows
+        const directions = bubble.row % 2 === 0 ?
+            [ // Even row
+                [-1,-1], [0,-1], [1,-1],  // Above
+                [-1,0], [1,0],            // Same row
+                [-1,1], [0,1], [1,1]      // Below
+            ] : [ // Odd row
+                [-1,-1], [0,-1], [1,-1],  // Above
+                [-1,0], [1,0],            // Same row
+                [-1,1], [0,1], [1,1]      // Below
+            ];
+        
+        for (const [dx, dy] of directions) {
+            const newRow = bubble.row + dy;
+            const newCol = bubble.col + dx;
+            
+            // Skip if outside grid
+            if (newRow < 0 || newRow >= GRID_ROWS || 
+                newCol < 0 || newCol >= GRID_COLS) {
+                continue;
+            }
+            
+            // Find any bubble at these coordinates
+            const neighbor = this.bubbles.find(b => 
+                b.row === newRow && b.col === newCol
+            );
+            
+            if (neighbor) {
+                neighbors.push(neighbor);
+            }
+        }
+        
+        return neighbors;
+    }
+    
     checkMatches() {
         const matches = new Set();
         const lastBubble = this.bubbles[this.bubbles.length - 1];
@@ -347,15 +384,21 @@ class Game {
             const key = `${bubble.row},${bubble.col}`;
             if (visited.has(key)) return;
             visited.add(key);
-            matches.add(key);
             
-            // Get neighbors of the same color
+            // Get all neighbors
             const neighbors = this.getNeighbors(bubble);
             console.log('Found neighbors:', neighbors.length);
             
-            // Recursively check each neighbor
-            for (const neighbor of neighbors) {
-                findMatches(neighbor, visited);
+            // Add this bubble if it matches the color
+            if (bubble.color === lastBubble.color) {
+                matches.add(key);
+                
+                // Only continue with neighbors of the same color
+                for (const neighbor of neighbors) {
+                    if (neighbor.color === lastBubble.color) {
+                        findMatches(neighbor, visited);
+                    }
+                }
             }
         };
         
@@ -388,43 +431,6 @@ class Game {
         }
     }
     
-    getNeighbors(bubble) {
-        const neighbors = [];
-        // Define directions for odd and even rows
-        const directions = bubble.row % 2 === 0 ?
-            [ // Even row
-                [-1,-1], [0,-1], [1,-1],  // Above
-                [-1,0], [1,0],            // Same row
-                [-1,1], [0,1], [1,1]      // Below
-            ] : [ // Odd row
-                [0,-1], [1,-1],           // Above
-                [-1,0], [1,0],            // Same row
-                [0,1], [1,1]              // Below
-            ];
-        
-        for (const [dx, dy] of directions) {
-            const newRow = bubble.row + dy;
-            const newCol = bubble.col + dx;
-            
-            // Skip if outside grid
-            if (newRow < 0 || newRow >= GRID_ROWS || 
-                newCol < 0 || newCol >= GRID_COLS) {
-                continue;
-            }
-            
-            // Find any bubble at these coordinates
-            const neighbor = this.bubbles.find(b => 
-                b.row === newRow && b.col === newCol
-            );
-            
-            if (neighbor && neighbor.color === bubble.color) {
-                neighbors.push(neighbor);
-            }
-        }
-        
-        return neighbors;
-    }
-    
     removeFloatingBubbles() {
         // Find all bubbles connected to the top
         const connected = new Set();
@@ -437,7 +443,7 @@ class Game {
             visited.add(key);
             connected.add(key);
             
-            // Check neighbors
+            // Check all neighbors regardless of color
             const neighbors = this.getNeighbors(bubble);
             for (const neighbor of neighbors) {
                 findConnected(neighbor);
