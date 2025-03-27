@@ -1,8 +1,8 @@
 // Game constants
-const CANVAS_WIDTH = 400;
-const CANVAS_HEIGHT = 600;
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 800;
 const BUBBLE_RADIUS = 20;
-const BUBBLE_SPACING = BUBBLE_RADIUS * 1.8; // Tighter spacing between bubbles
+const BUBBLE_SPACING = BUBBLE_RADIUS * 2.0; // Exact diameter spacing
 const SHOOTER_HEIGHT = 60;
 const COLORS = [
     '#FF0D0D', // red
@@ -11,11 +11,11 @@ const COLORS = [
     '#FFD90D', // yellow
     '#FF0DFF', // magenta
 ];
-const GRID_ROWS = 8;
-const GRID_COLS = 8;
+const GRID_ROWS = 12;
+const GRID_COLS = 15;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.8; // Reduced for exact contact
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 2.0; // Exact diameter for collision
 
 class Game {
     constructor(canvas) {
@@ -37,8 +37,8 @@ class Game {
         this.canvas.height = CANVAS_HEIGHT;
         
         // Scale up the canvas display size while maintaining internal resolution
-        this.canvas.style.width = (CANVAS_WIDTH * 1.5) + 'px';
-        this.canvas.style.height = (CANVAS_HEIGHT * 1.5) + 'px';
+        this.canvas.style.width = (CANVAS_WIDTH * 1.2) + 'px';
+        this.canvas.style.height = (CANVAS_HEIGHT * 1.2) + 'px';
         
         // Game state
         this.score = 0;
@@ -81,20 +81,24 @@ class Game {
     }
     
     init() {
-        // Initialize bubble grid
-        for (let row = 0; row < GRID_ROWS / 2; row++) {
+        // Initialize bubble grid - fill more rows initially
+        for (let row = 0; row < Math.floor(GRID_ROWS * 0.6); row++) { // Fill 60% of rows
             for (let col = 0; col < GRID_COLS; col++) {
+                // Calculate position with proper offset for odd rows
                 const x = col * BUBBLE_SPACING + BUBBLE_RADIUS + (row % 2 ? BUBBLE_RADIUS : 0);
-                const y = row * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS; // 0.866 = sin(60°) for hexagonal grid
-                const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                const y = row * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS; // 0.866 = sin(60°)
                 
-                this.bubbles.push({
-                    x,
-                    y,
-                    color,
-                    row,
-                    col
-                });
+                // Only add bubble if it fits within canvas width
+                if (x + BUBBLE_RADIUS <= CANVAS_WIDTH) {
+                    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    this.bubbles.push({
+                        x,
+                        y,
+                        color,
+                        row,
+                        col
+                    });
+                }
             }
         }
         
