@@ -15,7 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.8; // Reduced for exact contact
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 2.01; // Slightly larger than diameter for better contact
 
 class Game {
     constructor(canvas) {
@@ -219,36 +219,15 @@ class Game {
             }
             
             // Check collisions with other bubbles
-            let collision = false;
-            let minDistance = Infinity;
-            let closestBubble = null;
-            
             for (const bubble of this.bubbles) {
                 const dx = this.activeBubble.x - bubble.x;
                 const dy = this.activeBubble.y - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestBubble = bubble;
-                }
-                
                 if (distance <= COLLISION_THRESHOLD) {
-                    collision = true;
-                    break;
+                    this.snapBubbleToGrid();
+                    return;
                 }
-            }
-            
-            if (collision && closestBubble) {
-                // Move back to exact touching position
-                const dx = this.activeBubble.x - closestBubble.x;
-                const dy = this.activeBubble.y - closestBubble.y;
-                const angle = Math.atan2(dy, dx);
-                this.activeBubble.x = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
-                this.activeBubble.y = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
-                
-                this.snapBubbleToGrid();
-                return;
             }
         }
         
@@ -358,9 +337,9 @@ class Game {
                 [-1,0], [1,0],            // Same row
                 [-1,1], [0,1], [1,1]      // Below
             ] : [ // Odd row
-                [-1,-1], [0,-1], [1,-1],  // Above
+                [0,-1], [1,-1],           // Above
                 [-1,0], [1,0],            // Same row
-                [-1,1], [0,1], [1,1]      // Below
+                [0,1], [1,1]              // Below
             ];
         
         for (const [dx, dy] of directions) {
@@ -379,14 +358,7 @@ class Game {
             );
             
             if (neighbor) {
-                // Calculate actual distance to ensure it's a real neighbor
-                const dx = bubble.x - neighbor.x;
-                const dy = bubble.y - neighbor.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance <= BUBBLE_SPACING * 1.1) {
-                    neighbors.push(neighbor);
-                }
+                neighbors.push(neighbor);
             }
         }
         
@@ -404,30 +376,29 @@ class Game {
         });
         
         // Find all matching neighbors recursively
-        const findMatches = (bubble, visited = new Set()) => {
+        const findMatches = (bubble, color, visited = new Set()) => {
             const key = `${bubble.row},${bubble.col}`;
             if (visited.has(key)) return;
             visited.add(key);
             
-            // Get all neighbors
-            const neighbors = this.getNeighbors(bubble);
-            console.log('Found neighbors:', neighbors.length);
-            
-            // Add this bubble if it matches the color
-            if (bubble.color === lastBubble.color) {
+            if (bubble.color === color) {
                 matches.add(key);
                 
-                // Only continue with neighbors of the same color
+                // Get all neighbors
+                const neighbors = this.getNeighbors(bubble);
+                console.log('Found neighbors:', neighbors.length);
+                
+                // Only continue with matching color neighbors
                 for (const neighbor of neighbors) {
-                    if (neighbor.color === lastBubble.color) {
-                        findMatches(neighbor, visited);
+                    if (neighbor.color === color) {
+                        findMatches(neighbor, color, visited);
                     }
                 }
             }
         };
         
         // Start matching from the last placed bubble
-        findMatches(lastBubble);
+        findMatches(lastBubble, lastBubble.color);
         
         console.log('Total matches found:', matches.size);
         
