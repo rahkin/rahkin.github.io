@@ -486,10 +486,10 @@ class Game {
 
     async loadLeaderboard() {
         try {
-            const response = await fetch('https://api.pokka.ai/leaderboard/falling-blocks');
+            const response = await fetch('https://api.pokka.ai/scores/falling-blocks');
             if (response.ok) {
                 const data = await response.json();
-                this.leaderboard = data.scores || [];
+                this.leaderboard = data || [];
                 this.updateLeaderboardDisplay();
             }
         } catch (error) {
@@ -497,17 +497,16 @@ class Game {
         }
     }
 
-    async saveScore(score) {
+    async saveScore() {
         try {
-            const response = await fetch('https://api.pokka.ai/leaderboard/falling-blocks', {
+            const response = await fetch('https://api.pokka.ai/scores/falling-blocks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    playerName: this.playerName,
+                    name: this.playerName,
                     score: this.score,
-                    level: this.level,
                     date: new Date().toISOString()
                 })
             });
@@ -536,9 +535,10 @@ class Game {
             .slice(0, MAX_LEADERBOARD_ENTRIES)
             .forEach((entry, index) => {
                 const item = document.createElement('li');
-                const name = entry.playerName || 'Anonymous';
-                item.textContent = `${name} - ${entry.score.toLocaleString()} pts`;
-                if (entry.playerName === this.playerName) {
+                const name = entry.name || 'Anonymous';
+                const score = parseInt(entry.score).toLocaleString();
+                item.textContent = `${name} - ${score}`;
+                if (entry.name === this.playerName) {
                     item.style.color = 'var(--pokka-cyan)';
                     item.style.textShadow = '0 0 5px var(--pokka-cyan)';
                 }
@@ -548,8 +548,9 @@ class Game {
     }
 
     addToLeaderboard() {
-        // Save score to global leaderboard
-        this.saveScore();
+        if (this.score > 0) {
+            this.saveScore();
+        }
     }
 }
 
