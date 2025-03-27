@@ -105,8 +105,19 @@ class Game {
         this.shooterAngle = Math.max(0, Math.min(Math.PI, this.shooterAngle));
     }
     
-    handleClick() {
-        if (!this.activeBubble && !this.gameOver && this.started) {
+    handleClick(e) {
+        console.log('Click handled, game state:', {
+            started: this.started,
+            gameOver: this.gameOver,
+            activeBubble: !!this.activeBubble
+        });
+        
+        if (!this.started || this.gameOver) {
+            this.start();
+            return;
+        }
+        
+        if (!this.activeBubble) {
             this.shootBubble();
         }
     }
@@ -454,30 +465,65 @@ class Game {
     }
     
     start() {
+        console.log('Starting game...');
         this.started = true;
         this.gameOver = false;
         this.score = 0;
         this.bubbles = [];
+        this.activeBubble = null;
+        
+        // Reset shooter state
+        this.shooterAngle = Math.PI / 2;
+        this.currentBubble = {
+            color: COLORS[Math.floor(Math.random() * COLORS.length)],
+            x: this.shooterX,
+            y: this.shooterY
+        };
+        this.nextBubble = {
+            color: COLORS[Math.floor(Math.random() * COLORS.length)]
+        };
+        
+        // Initialize bubble grid
         this.init();
+        console.log('Game started successfully');
     }
 }
 
 // Initialize game when page loads
 window.addEventListener('load', () => {
+    console.log('Page loaded, initializing game...');
     const canvas = document.getElementById('gameCanvas');
+    if (!canvas) {
+        console.error('Canvas element not found!');
+        return;
+    }
+    
     window.game = new Game(canvas);
+    console.log('Game initialized');
     
     // Add start button listener
-    document.getElementById('startButton').addEventListener('click', () => {
+    const startButton = document.getElementById('startButton');
+    if (!startButton) {
+        console.error('Start button not found!');
+        return;
+    }
+    
+    startButton.addEventListener('click', (e) => {
+        console.log('Start button clicked');
+        e.preventDefault();
         if (!window.game.started || window.game.gameOver) {
             window.game.start();
         }
     });
     
     // Add canvas click listener for starting game
-    canvas.addEventListener('click', () => {
+    canvas.addEventListener('click', (e) => {
+        console.log('Canvas clicked');
+        e.preventDefault();
         if (!window.game.started || window.game.gameOver) {
             window.game.start();
         }
     });
+    
+    console.log('Event listeners added');
 }); 
