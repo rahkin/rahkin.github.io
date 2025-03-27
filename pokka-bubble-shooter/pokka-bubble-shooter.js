@@ -390,22 +390,57 @@ class Game {
             
             // Check collisions with other bubbles
             let collision = false;
+            let closestBubble = null;
+            let minDistance = Infinity;
             
-            // Check each bubble for collision
+            // Find closest bubble and check for collisions
             for (const bubble of this.bubbles) {
                 const dx = nextX - bubble.x;
                 const dy = nextY - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestBubble = bubble;
+                }
+                
                 // If we've collided with a bubble
                 if (distance <= BUBBLE_RADIUS * 2.0) {
                     collision = true;
-                    
-                    // Simply save the current position before collision
-                    // Don't try to calculate exact position - let the grid handle it
-                    this.snapBubbleToGrid(false);
-                    return;
+                    break;
                 }
+            }
+            
+            if (collision && closestBubble) {
+                // Find the grid position closest to the collision point
+                const row = Math.round((this.activeBubble.y) / (BUBBLE_SPACING * 0.866));
+                const isOddRow = row % 2 === 1;
+                let col;
+                
+                if (isOddRow) {
+                    col = Math.round((this.activeBubble.x - BUBBLE_RADIUS) / BUBBLE_SPACING);
+                } else {
+                    col = Math.round(this.activeBubble.x / BUBBLE_SPACING);
+                }
+                
+                // Calculate exact grid position
+                const x = isOddRow ? 
+                    (col * BUBBLE_SPACING + BUBBLE_RADIUS * 2) : 
+                    (col * BUBBLE_SPACING + BUBBLE_RADIUS);
+                const y = row * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS;
+                
+                // Add bubble to grid at calculated position
+                this.bubbles.push({
+                    x,
+                    y,
+                    color: this.activeBubble.color,
+                    row,
+                    col
+                });
+                
+                this.checkMatches();
+                this.activeBubble = null;
+                return;
             }
             
             // No collision, update position
@@ -440,12 +475,11 @@ class Game {
             return;
         }
         
-        // For bubble collisions, first find row based on current y position
+        // For bubble collisions, find the nearest valid grid position
         const row = Math.round(this.activeBubble.y / (BUBBLE_SPACING * 0.866));
         const isOddRow = row % 2 === 1;
-        
-        // Next find nearest column, adjusting for odd row offset
         let col;
+        
         if (isOddRow) {
             col = Math.round((this.activeBubble.x - BUBBLE_RADIUS) / BUBBLE_SPACING);
         } else {
