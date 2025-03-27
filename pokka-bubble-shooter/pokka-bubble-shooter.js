@@ -121,8 +121,8 @@ class Game {
         const dy = this.mouseY - this.shooterY;
         this.shooterAngle = Math.atan2(-dy, dx);
         
-        // Clamp angle between PI/2 (90 degrees) and 5PI/6 (150 degrees)
-        this.shooterAngle = Math.max(Math.PI/2, Math.min(5*Math.PI/6, this.shooterAngle));
+        // Clamp angle between PI/6 (30 degrees) and 5PI/6 (150 degrees)
+        this.shooterAngle = Math.max(Math.PI/6, Math.min(5*Math.PI/6, this.shooterAngle));
     }
     
     handleClick(e) {
@@ -153,7 +153,7 @@ class Game {
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                this.shooterAngle = Math.max(this.shooterAngle - 0.1, Math.PI/2);
+                this.shooterAngle = Math.max(this.shooterAngle - 0.1, Math.PI/6);
                 break;
             case 'Space':
                 e.preventDefault();
@@ -497,7 +497,7 @@ class Game {
             this.bubbles = [];
             this.activeBubble = null;
             
-            // Reset shooter state
+            // Reset shooter state to middle position (90 degrees)
             this.shooterAngle = Math.PI / 2;
             this.currentBubble = {
                 color: COLORS[Math.floor(Math.random() * COLORS.length)],
