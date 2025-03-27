@@ -205,9 +205,7 @@ class Game {
             window.soundManager.play('gameover');
             // Save score immediately when game is over
             if (this.score > 0) {
-                this.saveScore().catch(error => {
-                    console.error('Failed to save score on game over:', error);
-                });
+                this.saveScore();
             }
         }
     }
@@ -343,9 +341,7 @@ class Game {
         // Check for game over after landing
         if (this.gameOver) {
             if (this.score > 0) {
-                this.saveScore().then(() => {
-                    this.updateLeaderboardDisplay();
-                });
+                this.saveScore();
             }
         }
         
@@ -499,18 +495,17 @@ class Game {
     async loadLeaderboard() {
         try {
             console.log('Loading leaderboard...');
-            const response = await fetch('https://scores.pokka.ai/scores/falling-blocks', {
+            const response = await fetch('https://scores.pokka.ai/scores?game=falling-blocks', {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json',
-                    'Origin': 'https://rahkin.github.io'
-                },
-                mode: 'cors'
+                    'Content-Type': 'application/json',
+                }
             });
+            
             if (response.ok) {
                 const data = await response.json();
                 console.log('Leaderboard data:', data);
-                this.leaderboard = Array.isArray(data) ? data : [];
+                this.leaderboard = data;
                 this.updateLeaderboardDisplay();
             } else {
                 console.error('Failed to load leaderboard:', await response.text());
@@ -525,7 +520,6 @@ class Game {
             const scoreData = {
                 name: this.playerName,
                 score: this.score,
-                date: new Date().toISOString(),
                 game: 'falling-blocks'
             };
 
@@ -535,10 +529,7 @@ class Game {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Origin': 'https://rahkin.github.io'
                 },
-                mode: 'cors',
                 body: JSON.stringify(scoreData)
             });
             
@@ -549,11 +540,9 @@ class Game {
             } else {
                 const errorText = await response.text();
                 console.error('Failed to save score:', errorText);
-                throw new Error(`Failed to save score: ${errorText}`);
             }
         } catch (error) {
             console.error('Failed to save score:', error);
-            throw error;
         }
     }
 
