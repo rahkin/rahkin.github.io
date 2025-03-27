@@ -1,6 +1,6 @@
 // Game constants
 const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 800;
+const CANVAS_HEIGHT = 600;
 const BUBBLE_RADIUS = 20;
 const BUBBLE_SPACING = BUBBLE_RADIUS * 2.0; // Exact diameter spacing
 const SHOOTER_HEIGHT = 60;
@@ -11,7 +11,7 @@ const COLORS = [
     '#FFD90D', // yellow
     '#FF0DFF', // magenta
 ];
-const GRID_ROWS = 12;
+const GRID_ROWS = 9;
 const GRID_COLS = 15;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
@@ -46,7 +46,7 @@ class Game {
         this.paused = false;
         this.started = false;
         
-        // Shooter state
+        // Shooter state - centered in wider canvas
         this.shooterAngle = Math.PI / 2;
         this.shooterX = CANVAS_WIDTH / 2;
         this.shooterY = CANVAS_HEIGHT - SHOOTER_HEIGHT;
@@ -82,7 +82,7 @@ class Game {
     
     init() {
         // Initialize bubble grid - fill more rows initially
-        for (let row = 0; row < Math.floor(GRID_ROWS * 0.6); row++) { // Fill 60% of rows
+        for (let row = 0; row < Math.floor(GRID_ROWS * 0.5); row++) { // Fill 50% of rows
             for (let col = 0; col < GRID_COLS; col++) {
                 // Calculate position with proper offset for odd rows
                 const x = col * BUBBLE_SPACING + BUBBLE_RADIUS + (row % 2 ? BUBBLE_RADIUS : 0);
