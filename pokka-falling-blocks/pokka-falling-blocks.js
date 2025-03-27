@@ -499,7 +499,7 @@ class Game {
     async loadLeaderboard() {
         try {
             console.log('Loading leaderboard...');
-            const response = await fetch('https://api.pokka.ai/scores/falling-blocks', {
+            const response = await fetch('https://scores.pokka.ai/scores/falling-blocks', {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json',
@@ -531,7 +531,7 @@ class Game {
 
             console.log('Saving score:', scoreData);
 
-            const response = await fetch('https://api.pokka.ai/scores', {
+            const response = await fetch('https://scores.pokka.ai/scores', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
