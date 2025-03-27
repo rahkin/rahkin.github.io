@@ -15,7 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 2.0; // Exact diameter for collision
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.8; // Reduced for exact contact
 
 class Game {
     constructor(canvas) {
@@ -225,32 +225,37 @@ class Game {
             
             // First pass: find closest bubble and check for collisions
             for (const bubble of this.bubbles) {
-                const dx = nextX - bubble.x;
-                const dy = nextY - bubble.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                // Calculate distance at current position
+                const dx = this.activeBubble.x - bubble.x;
+                const dy = this.activeBubble.y - bubble.y;
+                const currentDistance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestBubble = bubble;
-                }
+                // Calculate distance at next position
+                const nextDx = nextX - bubble.x;
+                const nextDy = nextY - bubble.y;
+                const nextDistance = Math.sqrt(nextDx * nextDx + nextDy * nextDy);
                 
-                if (distance <= COLLISION_THRESHOLD) {
+                // If we're getting closer and within range
+                if (nextDistance < currentDistance && nextDistance < COLLISION_THRESHOLD) {
                     willCollide = true;
-                    break;
+                    if (nextDistance < minDistance) {
+                        minDistance = nextDistance;
+                        closestBubble = bubble;
+                    }
                 }
             }
             
             if (willCollide && closestBubble) {
-                // Calculate final position
-                const dx = nextX - closestBubble.x;
-                const dy = nextY - closestBubble.y;
+                // Calculate exact touching position
+                const dx = this.activeBubble.x - closestBubble.x;
+                const dy = this.activeBubble.y - closestBubble.y;
                 const angle = Math.atan2(dy, dx);
                 
-                // Place bubble at exact collision point
+                // Place bubble at exact touching position
                 this.activeBubble.x = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
                 this.activeBubble.y = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
                 
-                // Immediately snap to grid
+                // Snap to grid
                 this.snapBubbleToGrid(false);
             } else {
                 // No collision, update position
