@@ -81,8 +81,8 @@ class Game {
     }
     
     init() {
-        // Initialize bubble grid - fill more rows initially
-        for (let row = 0; row < Math.floor(GRID_ROWS * 0.5); row++) { // Fill 50% of rows
+        // Initialize bubble grid - fill exactly 6 rows
+        for (let row = 0; row < 6; row++) {
             for (let col = 0; col < GRID_COLS; col++) {
                 // Calculate position with proper offset for odd rows
                 const x = col * BUBBLE_SPACING + BUBBLE_RADIUS + (row % 2 ? BUBBLE_RADIUS : 0);
