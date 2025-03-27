@@ -3,170 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokka's Bubble Shooter</title>
-    <link href="https://fonts.googleapis.com/css2?family=One+Little+Font&display=swap" rel="stylesheet">
+    <title>Pokka Bubble Shooter</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --pokka-cyan: #0DFFF3;
-            --pokka-magenta: #FF0DFF;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #000;
-            color: #fff;
-            font-family: 'One Little Font', cursive;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .game-container {
-            position: relative;
-            margin: 20px auto;
-            text-align: center;
-        }
-
-        canvas {
-            border: 2px solid var(--pokka-cyan);
-            box-shadow: 0 0 10px var(--pokka-cyan);
-            margin: 0 auto;
-            display: block;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-        }
-
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        button {
-            background: transparent;
-            border: 2px solid var(--pokka-cyan);
-            color: var(--pokka-cyan);
-            padding: 10px 20px;
-            font-family: 'One Little Font', cursive;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background: var(--pokka-cyan);
-            color: #000;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            text-decoration: none;
-            color: var(--pokka-cyan);
-            border: 2px solid var(--pokka-cyan);
-            padding: 10px 20px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .back-button:hover {
-            background: var(--pokka-cyan);
-            color: #000;
-        }
-
-        @media (max-width: 768px) {
-            canvas {
-                max-width: 100%;
-                height: auto;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            button {
-                width: 100%;
-                max-width: 200px;
-            }
+        @font-face {
+            font-family: 'One Little Font';
+            src: url('OneLittleFont.ttf') format('truetype');
         }
     </style>
 </head>
 <body>
-    <a href="../index.html" class="back-button">← Back to Arcade</a>
+    <h1>Pokka Bubble Shooter</h1>
     
-    <div class="game-container">
-        <canvas id="gameCanvas"></canvas>
+    <div id="game-container">
+        <div class="game-side">
+            <div id="scoreboard">
+                <h2>Score: <span id="score-value">0</span></h2>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
         
-        <div class="controls">
-            <button id="startButton">START</button>
+        <div id="leaderboard">
+            <h2>Leaderboard</h2>
+            <div id="leaderboard-entries">
+                <p>No scores yet!</p>
+            </div>
         </div>
     </div>
-
+    
+    <div id="name-modal">
+        <div class="modal-content">
+            <h2>Game Over!</h2>
+            <p>Your score: <span id="final-score">0</span></p>
+            <div class="name-input">
+                <label for="player-name">Enter your name:</label>
+                <input type="text" id="player-name" maxlength="15">
+            </div>
+            <button id="submit-score">Submit Score</button>
+        </div>
+    </div>
+    
+    <script src="pokka-bubble-shooter.js"></script>
     <script>
-        // Ensure the game object is available globally
-        window.gameInstance = null;
-        
-        // Function to initialize the game
-        function initGame() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize game when DOM is fully loaded
             const canvas = document.getElementById('gameCanvas');
-            if (!canvas) {
-                console.error('Canvas element not found!');
-                return;
+            if (canvas) {
+                const game = new Game(canvas);
+            } else {
+                console.error('Canvas element not found');
             }
-            
-            try {
-                window.gameInstance = new Game(canvas);
-                console.log('Game initialized successfully');
-                
-                // Set up button click handler
-                const startButton = document.getElementById('startButton');
-                if (startButton) {
-                    startButton.onclick = function(e) {
-                        e.preventDefault();
-                        console.log('Start button clicked');
-                        if (window.gameInstance && (!window.gameInstance.started || window.gameInstance.gameOver)) {
-                            window.gameInstance.start();
-                        }
-                    };
-                }
-                
-                // Set up canvas click handler
-                canvas.onclick = function(e) {
-                    e.preventDefault();
-                    console.log('Canvas clicked');
-                    if (window.gameInstance && (!window.gameInstance.started || window.gameInstance.gameOver)) {
-                        window.gameInstance.start();
-                    }
-                };
-            } catch (error) {
-                console.error('Error initializing game:', error);
-            }
-        }
-        
-        // Load game script and initialize
-        window.addEventListener('load', function() {
-            console.log('Page loaded, loading game script...');
-            const gameScript = document.createElement('script');
-            gameScript.src = 'pokka-bubble-shooter.js';
-            gameScript.onload = function() {
-                console.log('Game script loaded, initializing...');
-                initGame();
-            };
-            gameScript.onerror = function(error) {
-                console.error('Failed to load game script:', error);
-            };
-            document.body.appendChild(gameScript);
         });
     </script>
 </body>

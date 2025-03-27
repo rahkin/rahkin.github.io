@@ -16,6 +16,7 @@ const GRID_COLS = 15;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
 const COLLISION_THRESHOLD = BUBBLE_RADIUS * 2.0; // Exact diameter for collision
+const TOP_SCORES_COUNT = 5; // Number of top scores to track
 
 class Game {
     constructor(canvas) {
@@ -45,6 +46,10 @@ class Game {
         this.gameOver = false;
         this.paused = false;
         this.started = false;
+        this.playerName = '';
+        
+        // Initialize leaderboard
+        this.leaderboard = this.loadLeaderboard();
         
         // Shooter state - centered in wider canvas
         this.shooterAngle = Math.PI / 2;
@@ -70,6 +75,9 @@ class Game {
         this.canvas.addEventListener('click', this.handleClick);
         document.addEventListener('keydown', this.handleKeyPress);
         
+        // Initialize UI
+        this.initUI();
+        
         // Initialize game
         this.init();
         
@@ -78,6 +86,160 @@ class Game {
         requestAnimationFrame(this.gameLoop);
         
         console.log('Game instance created successfully');
+    }
+    
+    // Initialize UI elements outside of canvas
+    initUI() {
+        // Create scoreboard div
+        this.scoreboardDiv = document.getElementById('scoreboard') || document.createElement('div');
+        this.scoreboardDiv.id = 'scoreboard';
+        this.scoreboardDiv.innerHTML = `
+            <h2>Score: <span id="score-value">0</span></h2>
+        `;
+        
+        // Create leaderboard
+        this.leaderboardDiv = document.getElementById('leaderboard') || document.createElement('div');
+        this.leaderboardDiv.id = 'leaderboard';
+        this.leaderboardDiv.innerHTML = `
+            <h2>Leaderboard</h2>
+            <div id="leaderboard-entries"></div>
+        `;
+        
+        // Create name input modal
+        this.nameModalDiv = document.getElementById('name-modal') || document.createElement('div');
+        this.nameModalDiv.id = 'name-modal';
+        this.nameModalDiv.innerHTML = `
+            <div class="modal-content">
+                <h2>Game Over!</h2>
+                <p>Your score: <span id="final-score">0</span></p>
+                <div class="name-input">
+                    <label for="player-name">Enter your name:</label>
+                    <input type="text" id="player-name" maxlength="15">
+                </div>
+                <button id="submit-score">Submit Score</button>
+            </div>
+        `;
+        
+        // Make sure elements are in the DOM
+        if (!document.getElementById('scoreboard')) {
+            document.body.appendChild(this.scoreboardDiv);
+        }
+        
+        if (!document.getElementById('leaderboard')) {
+            document.body.appendChild(this.leaderboardDiv);
+        }
+        
+        if (!document.getElementById('name-modal')) {
+            document.body.appendChild(this.nameModalDiv);
+        }
+        
+        // Add event listener for score submission
+        const submitButton = document.getElementById('submit-score');
+        if (submitButton) {
+            submitButton.addEventListener('click', () => {
+                const nameInput = document.getElementById('player-name');
+                if (nameInput && nameInput.value.trim()) {
+                    this.playerName = nameInput.value.trim();
+                    this.saveScore();
+                    this.nameModalDiv.style.display = 'none';
+                    this.start();
+                }
+            });
+        }
+        
+        // Update leaderboard UI
+        this.updateLeaderboardUI();
+    }
+    
+    // Update score in UI
+    updateScore() {
+        const scoreElement = document.getElementById('score-value');
+        if (scoreElement) {
+            scoreElement.textContent = this.score;
+        }
+    }
+    
+    // Load leaderboard from localStorage
+    loadLeaderboard() {
+        try {
+            const leaderboardData = localStorage.getItem('bubbleShooterLeaderboard');
+            return leaderboardData ? JSON.parse(leaderboardData) : [];
+        } catch (error) {
+            console.error('Error loading leaderboard:', error);
+            return [];
+        }
+    }
+    
+    // Save leaderboard to localStorage
+    saveLeaderboard() {
+        try {
+            localStorage.setItem('bubbleShooterLeaderboard', JSON.stringify(this.leaderboard));
+            this.updateLeaderboardUI();
+        } catch (error) {
+            console.error('Error saving leaderboard:', error);
+        }
+    }
+    
+    // Update leaderboard UI
+    updateLeaderboardUI() {
+        const leaderboardEntriesDiv = document.getElementById('leaderboard-entries');
+        if (leaderboardEntriesDiv) {
+            // Clear existing entries
+            leaderboardEntriesDiv.innerHTML = '';
+            
+            // Add entries
+            if (this.leaderboard.length === 0) {
+                leaderboardEntriesDiv.innerHTML = '<p>No scores yet!</p>';
+            } else {
+                const entries = this.leaderboard
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, TOP_SCORES_COUNT);
+                
+                const list = document.createElement('ol');
+                entries.forEach(entry => {
+                    const item = document.createElement('li');
+                    item.textContent = `${entry.name}: ${entry.score}`;
+                    list.appendChild(item);
+                });
+                
+                leaderboardEntriesDiv.appendChild(list);
+            }
+        }
+    }
+    
+    // Save score to leaderboard
+    saveScore() {
+        if (!this.playerName) return;
+        
+        this.leaderboard.push({
+            name: this.playerName,
+            score: this.score,
+            date: new Date().toISOString()
+        });
+        
+        // Sort and limit to top scores
+        this.leaderboard.sort((a, b) => b.score - a.score);
+        if (this.leaderboard.length > TOP_SCORES_COUNT * 2) {
+            this.leaderboard = this.leaderboard.slice(0, TOP_SCORES_COUNT * 2);
+        }
+        
+        this.saveLeaderboard();
+    }
+    
+    // Show name input modal
+    showNameInputModal() {
+        const finalScoreElement = document.getElementById('final-score');
+        if (finalScoreElement) {
+            finalScoreElement.textContent = this.score;
+        }
+        
+        const nameInput = document.getElementById('player-name');
+        if (nameInput) {
+            nameInput.value = this.playerName;
+            nameInput.focus();
+        }
+        
+        this.nameModalDiv.style.display = 'flex';
     }
     
     init() {
@@ -140,7 +302,11 @@ class Game {
         });
         
         if (!this.started || this.gameOver) {
-            this.start();
+            if (this.gameOver) {
+                this.showNameInputModal();
+            } else {
+                this.start();
+            }
             return;
         }
         
@@ -251,6 +417,7 @@ class Game {
         const lowestBubble = Math.max(...this.bubbles.map(b => b.y));
         if (lowestBubble > CANVAS_HEIGHT - SHOOTER_HEIGHT - BUBBLE_RADIUS * 2) {
             this.gameOver = true;
+            this.showNameInputModal();
         }
     }
     
@@ -403,6 +570,7 @@ class Game {
             
             // Update score
             this.score += matches.size * 100;
+            this.updateScore();
             
             // Check for floating bubbles
             this.removeFloatingBubbles();
@@ -475,12 +643,6 @@ class Game {
             this.nextBubble.color
         );
         
-        // Draw score
-        this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.font = '20px "One Little Font"';
-        this.ctx.textAlign = 'left';
-        this.ctx.fillText(`Score: ${this.score}`, 10, 30);
-        
         // Draw game over screen
         if (this.gameOver) {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
@@ -492,17 +654,6 @@ class Game {
                 'GAME OVER',
                 CANVAS_WIDTH / 2,
                 CANVAS_HEIGHT / 2
-            );
-            this.ctx.font = '20px "One Little Font"';
-            this.ctx.fillText(
-                `Final Score: ${this.score}`,
-                CANVAS_WIDTH / 2,
-                CANVAS_HEIGHT / 2 + 40
-            );
-            this.ctx.fillText(
-                'Click to play again',
-                CANVAS_WIDTH / 2,
-                CANVAS_HEIGHT / 2 + 80
             );
         }
         
@@ -606,6 +757,9 @@ class Game {
             this.score = 0;
             this.bubbles = [];
             this.activeBubble = null;
+            
+            // Update score display
+            this.updateScore();
             
             // Reset shooter state to straight up (PI/2)
             this.shooterAngle = Math.PI / 2;
