@@ -11,6 +11,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=One+Little+Font&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="pokka-falling-blocks.css">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            font-family: 'Press Start 2P', cursive;
+            color: #fff;
+        }
+
+        #gameContainer {
+            position: relative;
+        }
+
+        #gameCanvas {
+            border: 4px solid var(--pokka-cyan, #0DFFF3);
+            box-shadow: 0 0 20px rgba(13, 255, 243, 0.5);
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .key {
+            display: inline-block;
+            padding: 5px 10px;
+            background: rgba(13, 255, 243, 0.2);
+            border: 1px solid var(--pokka-cyan, #0DFFF3);
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="game-container">
@@ -41,7 +79,9 @@
                     <canvas id="nextCanvas" width="120" height="120"></canvas>
                 </div>
             </div>
-            <canvas id="gameCanvas" width="300" height="600"></canvas>
+            <div id="gameContainer">
+                <canvas id="gameCanvas"></canvas>
+            </div>
         </div>
 
         <div class="mobile-controls">
@@ -57,6 +97,12 @@
                 <button id="dropBtn">⬇</button>
             </div>
         </div>
+    </div>
+
+    <div class="controls">
+        <p>Controls:</p>
+        <p><span class="key">←</span> <span class="key">→</span> Move • <span class="key">↑</span> Rotate • <span class="key">↓</span> Soft Drop</p>
+        <p><span class="key">Space</span> Hard Drop • <span class="key">P</span> Pause • <span class="key">M</span> Mute</p>
     </div>
 
     <!-- Player Name Modal -->
@@ -99,5 +145,6 @@
     </div>
 
     <script type="module" src="pokka-falling-blocks.js"></script>
+    <script src="sound-manager.js"></script>
 </body>
 </html> 
