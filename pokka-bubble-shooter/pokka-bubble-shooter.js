@@ -191,12 +191,18 @@ class Game {
         if (this.gameOver || this.paused || !this.started) return;
         
         if (this.activeBubble) {
+            // Store previous position
+            const prevX = this.activeBubble.x;
+            const prevY = this.activeBubble.y;
+            
             // Update bubble position
             this.activeBubble.x += this.activeBubble.dx;
             this.activeBubble.y += this.activeBubble.dy;
             
-            // Check if bubble went too far up or down
-            if (this.activeBubble.y > CANVAS_HEIGHT || this.activeBubble.y < 0) {
+            // Check ceiling collision first
+            if (this.activeBubble.y <= BUBBLE_RADIUS) {
+                // Move back to valid position
+                this.activeBubble.y = BUBBLE_RADIUS;
                 this.snapBubbleToGrid();
                 return;
             }
@@ -210,9 +216,9 @@ class Game {
                     Math.min(CANVAS_WIDTH - BUBBLE_RADIUS, this.activeBubble.x));
             }
             
-            // Check ceiling collision
-            if (this.activeBubble.y <= BUBBLE_RADIUS) {
-                this.snapBubbleToGrid();
+            // Check if bubble went too far down
+            if (this.activeBubble.y > CANVAS_HEIGHT) {
+                this.activeBubble = null;
                 return;
             }
             
@@ -337,31 +343,24 @@ class Game {
         });
         
         // Find all matching neighbors recursively
-        const findMatches = (bubble, color, visited = new Set()) => {
+        const findMatches = (bubble, visited = new Set()) => {
             const key = `${bubble.row},${bubble.col}`;
             if (visited.has(key)) return;
             visited.add(key);
+            matches.add(key);
             
-            // Add to matches if color matches
-            if (bubble.color === color) {
-                matches.add(key);
-                console.log('Found matching bubble:', {
-                    row: bubble.row,
-                    col: bubble.col,
-                    color: bubble.color
-                });
-                
-                // Check all neighbors
-                const neighbors = this.getNeighbors(bubble);
-                console.log('Found neighbors:', neighbors.length);
-                for (const neighbor of neighbors) {
-                    findMatches(neighbor, color, visited);
-                }
+            // Get neighbors of the same color
+            const neighbors = this.getNeighbors(bubble);
+            console.log('Found neighbors:', neighbors.length);
+            
+            // Recursively check each neighbor
+            for (const neighbor of neighbors) {
+                findMatches(neighbor, visited);
             }
         };
         
         // Start matching from the last placed bubble
-        findMatches(lastBubble, lastBubble.color);
+        findMatches(lastBubble);
         
         console.log('Total matches found:', matches.size);
         
@@ -398,9 +397,9 @@ class Game {
                 [-1,0], [1,0],            // Same row
                 [-1,1], [0,1], [1,1]      // Below
             ] : [ // Odd row
-                [-1,-1], [0,-1], [1,-1],  // Above
+                [0,-1], [1,-1],           // Above
                 [-1,0], [1,0],            // Same row
-                [-1,1], [0,1], [1,1]      // Below
+                [0,1], [1,1]              // Below
             ];
         
         for (const [dx, dy] of directions) {
@@ -418,7 +417,7 @@ class Game {
                 b.row === newRow && b.col === newCol
             );
             
-            if (neighbor) {
+            if (neighbor && neighbor.color === bubble.color) {
                 neighbors.push(neighbor);
             }
         }
