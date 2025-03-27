@@ -58,8 +58,17 @@ class Game {
         document.getElementById('score').textContent = this.score;
         document.getElementById('level').textContent = this.level;
         
-        // Bind event handlers
-        document.addEventListener('keydown', this.handleKeyPress.bind(this));
+        // Bind event handlers with proper event prevention
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) {
+                e.preventDefault();  // Prevent scrolling only for game control keys
+                if (!this.gameOver && !this.paused && this.started) {
+                    this.handleKeyPress(e);
+                }
+            } else if (e.code === 'KeyP' || e.code === 'KeyM') {
+                this.handleKeyPress(e);
+            }
+        });
         
         // Initialize game loop
         this.dropInterval = 1000;
@@ -262,6 +271,12 @@ class Game {
     }
     
     moveRight() {
+        if (!this.currentPiece) return false;
+        
+        // Check if moving right would exceed the board width
+        const rightmostX = this.currentX + this.currentPiece[0].length;
+        if (rightmostX >= BOARD_WIDTH) return false;
+        
         if (this.isValidMove(1, 0)) {
             this.currentX++;
             window.soundManager.play('move');
