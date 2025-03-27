@@ -109,26 +109,64 @@
         <canvas id="gameCanvas"></canvas>
         
         <div class="controls">
-            <button id="startButton" onclick="window.game.start()">START</button>
+            <button id="startButton">START</button>
         </div>
     </div>
 
-    <script src="pokka-bubble-shooter.js"></script>
     <script>
-        // Ensure the game starts properly
-        window.addEventListener('load', () => {
-            if (window.game) {
-                console.log('Game loaded successfully');
-                // Add direct click handler to canvas
-                document.getElementById('gameCanvas').onclick = function(e) {
+        // Ensure the game object is available globally
+        window.gameInstance = null;
+        
+        // Function to initialize the game
+        function initGame() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) {
+                console.error('Canvas element not found!');
+                return;
+            }
+            
+            try {
+                window.gameInstance = new Game(canvas);
+                console.log('Game initialized successfully');
+                
+                // Set up button click handler
+                const startButton = document.getElementById('startButton');
+                if (startButton) {
+                    startButton.onclick = function(e) {
+                        e.preventDefault();
+                        console.log('Start button clicked');
+                        if (window.gameInstance && (!window.gameInstance.started || window.gameInstance.gameOver)) {
+                            window.gameInstance.start();
+                        }
+                    };
+                }
+                
+                // Set up canvas click handler
+                canvas.onclick = function(e) {
                     e.preventDefault();
-                    if (!window.game.started || window.game.gameOver) {
-                        window.game.start();
+                    console.log('Canvas clicked');
+                    if (window.gameInstance && (!window.gameInstance.started || window.gameInstance.gameOver)) {
+                        window.gameInstance.start();
                     }
                 };
-            } else {
-                console.error('Game failed to load');
+            } catch (error) {
+                console.error('Error initializing game:', error);
             }
+        }
+        
+        // Load game script and initialize
+        window.addEventListener('load', function() {
+            console.log('Page loaded, loading game script...');
+            const gameScript = document.createElement('script');
+            gameScript.src = 'pokka-bubble-shooter.js';
+            gameScript.onload = function() {
+                console.log('Game script loaded, initializing...');
+                initGame();
+            };
+            gameScript.onerror = function(error) {
+                console.error('Failed to load game script:', error);
+            };
+            document.body.appendChild(gameScript);
         });
     </script>
 </body>

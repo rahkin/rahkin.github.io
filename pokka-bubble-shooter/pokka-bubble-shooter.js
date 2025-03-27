@@ -17,8 +17,18 @@ const MAX_ANGLE = Math.PI;
 
 class Game {
     constructor(canvas) {
+        if (!canvas || !canvas.getContext) {
+            console.error('Invalid canvas element');
+            return;
+        }
+
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
+        
+        if (!this.ctx) {
+            console.error('Could not get 2D context');
+            return;
+        }
         
         // Set canvas size
         this.canvas.width = CANVAS_WIDTH;
@@ -35,30 +45,37 @@ class Game {
         this.started = false;
         
         // Shooter state
-        this.shooterAngle = Math.PI / 2; // Start pointing upward
-        this.currentBubble = null;
-        this.nextBubble = null;
+        this.shooterAngle = Math.PI / 2;
         this.shooterX = CANVAS_WIDTH / 2;
         this.shooterY = CANVAS_HEIGHT - SHOOTER_HEIGHT;
         
-        // Bubble grid
+        // Initialize bubbles
         this.bubbles = [];
         this.activeBubble = null;
+        this.currentBubble = null;
+        this.nextBubble = null;
         
         // Mouse/touch state
         this.mouseX = 0;
         this.mouseY = 0;
         
         // Bind event handlers
-        this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-        this.canvas.addEventListener('click', this.handleClick.bind(this));
-        document.addEventListener('keydown', this.handleKeyPress.bind(this));
+        this.handleMouseMove = this.handleMouseMove.bind(this);
+        this.handleClick = this.handleClick.bind(this);
+        this.handleKeyPress = this.handleKeyPress.bind(this);
+        
+        this.canvas.addEventListener('mousemove', this.handleMouseMove);
+        this.canvas.addEventListener('click', this.handleClick);
+        document.addEventListener('keydown', this.handleKeyPress);
         
         // Initialize game
         this.init();
         
         // Start game loop
-        this.gameLoop();
+        this.gameLoop = this.gameLoop.bind(this);
+        requestAnimationFrame(this.gameLoop);
+        
+        console.log('Game instance created successfully');
     }
     
     init() {
@@ -461,69 +478,34 @@ class Game {
     gameLoop() {
         this.update();
         this.draw();
-        requestAnimationFrame(() => this.gameLoop());
+        requestAnimationFrame(this.gameLoop);
     }
     
     start() {
         console.log('Starting game...');
-        this.started = true;
-        this.gameOver = false;
-        this.score = 0;
-        this.bubbles = [];
-        this.activeBubble = null;
-        
-        // Reset shooter state
-        this.shooterAngle = Math.PI / 2;
-        this.currentBubble = {
-            color: COLORS[Math.floor(Math.random() * COLORS.length)],
-            x: this.shooterX,
-            y: this.shooterY
-        };
-        this.nextBubble = {
-            color: COLORS[Math.floor(Math.random() * COLORS.length)]
-        };
-        
-        // Initialize bubble grid
-        this.init();
-        console.log('Game started successfully');
+        try {
+            this.started = true;
+            this.gameOver = false;
+            this.score = 0;
+            this.bubbles = [];
+            this.activeBubble = null;
+            
+            // Reset shooter state
+            this.shooterAngle = Math.PI / 2;
+            this.currentBubble = {
+                color: COLORS[Math.floor(Math.random() * COLORS.length)],
+                x: this.shooterX,
+                y: this.shooterY
+            };
+            this.nextBubble = {
+                color: COLORS[Math.floor(Math.random() * COLORS.length)]
+            };
+            
+            // Initialize bubble grid
+            this.init();
+            console.log('Game started successfully');
+        } catch (error) {
+            console.error('Error starting game:', error);
+        }
     }
 }
-
-// Initialize game when page loads
-window.addEventListener('load', () => {
-    console.log('Page loaded, initializing game...');
-    const canvas = document.getElementById('gameCanvas');
-    if (!canvas) {
-        console.error('Canvas element not found!');
-        return;
-    }
-    
-    window.game = new Game(canvas);
-    console.log('Game initialized');
-    
-    // Add start button listener
-    const startButton = document.getElementById('startButton');
-    if (!startButton) {
-        console.error('Start button not found!');
-        return;
-    }
-    
-    startButton.addEventListener('click', (e) => {
-        console.log('Start button clicked');
-        e.preventDefault();
-        if (!window.game.started || window.game.gameOver) {
-            window.game.start();
-        }
-    });
-    
-    // Add canvas click listener for starting game
-    canvas.addEventListener('click', (e) => {
-        console.log('Canvas clicked');
-        e.preventDefault();
-        if (!window.game.started || window.game.gameOver) {
-            window.game.start();
-        }
-    });
-    
-    console.log('Event listeners added');
-}); 
