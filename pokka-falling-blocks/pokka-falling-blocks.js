@@ -79,42 +79,86 @@ class Game {
 
     start() {
         if (!this.started) {
-            // Prompt for player name with validation
-            let name = null;
-            while (!name) {
-                name = prompt('Enter your name to start playing:', localStorage.getItem('lastPlayerName') || '');
-                if (name === null) return; // User clicked cancel
-                name = name.trim();
-                if (name.length === 0) {
-                    alert('Please enter a name to play!');
-                    name = null;
-                } else if (name.length > 20) {
-                    name = name.substring(0, 20);
-                }
+            this.showNameInput();
+        }
+    }
+
+    showNameInput() {
+        const nameInput = document.getElementById('nameInput');
+        const overlay = document.querySelector('.overlay');
+        const input = document.getElementById('playerNameInput');
+        
+        // Show the modal and overlay
+        nameInput.classList.add('visible');
+        overlay.classList.add('visible');
+        
+        // Focus the input
+        input.value = localStorage.getItem('lastPlayerName') || '';
+        input.focus();
+        
+        // Handle submit
+        const handleSubmit = () => {
+            let name = input.value.trim();
+            
+            if (name.length === 0) {
+                alert('Please enter a name to play!');
+                return;
             }
             
-            this.playerName = name;
-            localStorage.setItem('lastPlayerName', name);
+            if (name.length > 20) {
+                name = name.substring(0, 20);
+            }
             
-            this.started = true;
-            this.gameOver = false;
-            this.score = 0;
-            this.level = 1;
-            document.getElementById('score').textContent = this.score;
-            document.getElementById('level').textContent = this.level;
+            // Hide the modal
+            nameInput.classList.remove('visible');
+            overlay.classList.remove('visible');
             
-            // Clear the board
-            this.board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
-            
-            // Spawn first pieces
-            this.nextPiece = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-            this.nextColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-            this.spawnPiece();
+            // Start the game
+            this.startGame(name);
+        };
+        
+        // Add event listeners
+        const submitButton = document.getElementById('submitName');
+        const submitHandler = () => {
+            handleSubmit();
+            submitButton.removeEventListener('click', submitHandler);
+            input.removeEventListener('keypress', keypressHandler);
+        };
+        
+        const keypressHandler = (e) => {
+            if (e.key === 'Enter') {
+                handleSubmit();
+                submitButton.removeEventListener('click', submitHandler);
+                input.removeEventListener('keypress', keypressHandler);
+            }
+        };
+        
+        submitButton.addEventListener('click', submitHandler);
+        input.addEventListener('keypress', keypressHandler);
+    }
 
-            // Show leaderboard after starting
-            document.getElementById('leaderboard').classList.remove('hidden');
-            document.getElementById('leaderboard').classList.add('visible');
-        }
+    startGame(playerName) {
+        this.playerName = playerName;
+        localStorage.setItem('lastPlayerName', playerName);
+        
+        this.started = true;
+        this.gameOver = false;
+        this.score = 0;
+        this.level = 1;
+        document.getElementById('score').textContent = this.score;
+        document.getElementById('level').textContent = this.level;
+        
+        // Clear the board
+        this.board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+        
+        // Spawn first pieces
+        this.nextPiece = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+        this.nextColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+        this.spawnPiece();
+
+        // Show leaderboard
+        document.getElementById('leaderboard').classList.remove('hidden');
+        document.getElementById('leaderboard').classList.add('visible');
     }
 
     drawStartScreen() {
@@ -453,7 +497,7 @@ class Game {
 
     updateLeaderboardDisplay() {
         const leaderboardElement = document.getElementById('leaderboard');
-        leaderboardElement.innerHTML = '<h3>Global High Scores</h3>';
+        leaderboardElement.innerHTML = '<h3>Leaderboard</h3>';
         
         if (this.leaderboard.length === 0) {
             leaderboardElement.innerHTML += '<p>No scores yet!</p>';
@@ -464,12 +508,13 @@ class Game {
         this.leaderboard
             .sort((a, b) => b.score - a.score)
             .slice(0, MAX_LEADERBOARD_ENTRIES)
-            .forEach(entry => {
+            .forEach((entry, index) => {
                 const item = document.createElement('li');
                 const name = entry.playerName || 'Anonymous';
-                item.textContent = `${name} - ${entry.score} (Level ${entry.level})`;
+                item.textContent = `${name} - ${entry.score.toLocaleString()} pts`;
                 if (entry.playerName === this.playerName) {
-                    item.style.color = '#0DFFF3';
+                    item.style.color = 'var(--pokka-cyan)';
+                    item.style.textShadow = '0 0 5px var(--pokka-cyan)';
                 }
                 list.appendChild(item);
             });

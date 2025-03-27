@@ -151,39 +151,106 @@
         #leaderboard {
             margin-top: 20px;
             padding: 20px;
-            border: 2px solid #0DFFF3;
+            border: 2px solid var(--pokka-cyan);
             border-radius: 5px;
-            box-shadow: 0 0 10px #0DFFF3;
+            box-shadow: 0 0 10px var(--pokka-cyan);
             background-color: rgba(13, 255, 243, 0.1);
             min-width: 200px;
+            text-align: center;
         }
 
         #leaderboard h3 {
             margin-top: 0;
             text-align: center;
-            color: #0DFFF3;
-            font-size: 18px;
+            color: var(--pokka-cyan);
+            font-size: 24px;
             margin-bottom: 15px;
+            text-transform: uppercase;
         }
 
         #leaderboard ol {
             margin: 0;
-            padding-left: 25px;
-            list-style-position: inside;
+            padding: 0;
+            list-style: none;
         }
 
         #leaderboard li {
             margin: 8px 0;
-            padding: 5px;
+            padding: 8px;
             border-radius: 3px;
-            transition: background-color 0.3s ease;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            font-size: 16px;
         }
 
         #leaderboard li:hover {
             background-color: rgba(13, 255, 243, 0.2);
+            border-color: var(--pokka-cyan);
+            transform: scale(1.02);
+        }
+
+        #nameInput {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--pokka-dark);
+            border: 2px solid var(--pokka-cyan);
+            border-radius: 5px;
+            box-shadow: 0 0 20px var(--pokka-cyan);
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        #nameInput.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        #nameInput h2 {
+            color: var(--pokka-cyan);
+            margin-top: 0;
+            font-size: 24px;
+        }
+
+        #nameInput input {
+            background: rgba(13, 255, 243, 0.1);
+            border: 1px solid var(--pokka-cyan);
+            color: var(--pokka-white);
+            padding: 10px;
+            margin: 10px 0;
+            width: 200px;
+            font-family: 'One Little Font', sans-serif;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 3px;
+        }
+
+        #nameInput input:focus {
+            outline: none;
+            box-shadow: 0 0 10px var(--pokka-cyan);
+        }
+
+        #nameInput button {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.visible {
+            display: block;
         }
 
         @media (max-width: 768px) {
@@ -273,7 +340,7 @@
             </div>
             
             <div id="leaderboard" class="hidden">
-                <h3>Global High Scores</h3>
+                <h3>Leaderboard</h3>
                 <p>No scores yet!</p>
             </div>
         </div>
@@ -284,6 +351,14 @@
         <p><span class="key">←</span> <span class="key">→</span> Move • <span class="key">↑</span> Rotate • <span class="key">↓</span> Soft Drop</p>
         <p><span class="key">Space</span> Hard Drop • <span class="key">P</span> Pause • <span class="key">M</span> Mute</p>
     </div>
+
+    <div id="nameInput">
+        <h2>Enter Your Name</h2>
+        <input type="text" id="playerNameInput" maxlength="20" placeholder="Your name here...">
+        <button id="submitName">Start Playing!</button>
+    </div>
+
+    <div class="overlay"></div>
 
     <script src="sound-manager.js"></script>
     <script src="pokka-falling-blocks.js"></script>
