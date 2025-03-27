@@ -119,10 +119,10 @@ class Game {
         // Calculate angle between shooter and mouse position
         const dx = this.mouseX - this.shooterX;
         const dy = this.mouseY - this.shooterY;
-        this.shooterAngle = Math.atan2(-dy, dx) + Math.PI / 2;
+        this.shooterAngle = Math.atan2(-dy, dx);
         
-        // Clamp angle between 0 and PI
-        this.shooterAngle = Math.max(0, Math.min(Math.PI, this.shooterAngle));
+        // Clamp angle between -PI/2 and PI/2
+        this.shooterAngle = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.shooterAngle));
     }
     
     handleClick(e) {
@@ -149,11 +149,11 @@ class Game {
         switch (e.code) {
             case 'ArrowLeft':
                 e.preventDefault();
-                this.shooterAngle = Math.min(this.shooterAngle + 0.1, Math.PI);
+                this.shooterAngle = Math.min(this.shooterAngle + 0.1, Math.PI/2);
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                this.shooterAngle = Math.max(this.shooterAngle - 0.1, 0);
+                this.shooterAngle = Math.max(this.shooterAngle - 0.1, -Math.PI/2);
                 break;
             case 'Space':
                 e.preventDefault();
