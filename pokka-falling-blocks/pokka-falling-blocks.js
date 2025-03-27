@@ -72,10 +72,23 @@ class Game {
         // Load leaderboard
         this.leaderboard = this.loadLeaderboard();
         this.updateLeaderboardDisplay();
+        
+        this.playerName = '';
     }
 
     start() {
         if (!this.started) {
+            // Prompt for player name
+            let name = prompt('Enter your name:', localStorage.getItem('lastPlayerName') || '');
+            if (!name) return; // Don't start if no name provided
+            
+            name = name.trim();
+            if (name.length > 20) name = name.substring(0, 20); // Limit name length
+            if (name.length === 0) name = 'Anonymous';
+            
+            this.playerName = name;
+            localStorage.setItem('lastPlayerName', name); // Remember name for next time
+            
             this.started = true;
             this.gameOver = false;
             this.score = 0;
@@ -109,11 +122,14 @@ class Game {
             this.canvas.width / 2,
             this.canvas.height / 3 + 30);
             
-        // Draw instruction
+        // Draw instructions
         this.ctx.font = '16px "One Little Font"';
         this.ctx.fillText('Click START to play!', 
             this.canvas.width / 2,
             this.canvas.height / 2 + 30);
+        this.ctx.fillText('Enter your name to join the leaderboard', 
+            this.canvas.width / 2,
+            this.canvas.height / 2 + 60);
     }
     
     spawnPiece() {
@@ -426,7 +442,7 @@ class Game {
 
     updateLeaderboardDisplay() {
         const leaderboardElement = document.getElementById('leaderboard');
-        leaderboardElement.innerHTML = '<h3>High Scores</h3>';
+        leaderboardElement.innerHTML = '<h3>Global High Scores</h3>';
         
         if (this.leaderboard.length === 0) {
             leaderboardElement.innerHTML += '<p>No scores yet!</p>';
@@ -439,7 +455,11 @@ class Game {
             .slice(0, MAX_LEADERBOARD_ENTRIES)
             .forEach(entry => {
                 const item = document.createElement('li');
-                item.textContent = `${entry.score} - Level ${entry.level}`;
+                const name = entry.playerName || 'Anonymous';
+                item.textContent = `${name} - ${entry.score} (Level ${entry.level})`;
+                if (entry.playerName === this.playerName) {
+                    item.style.color = '#0DFFF3';
+                }
                 list.appendChild(item);
             });
         leaderboardElement.appendChild(list);
@@ -447,6 +467,7 @@ class Game {
 
     addToLeaderboard() {
         this.leaderboard.push({
+            playerName: this.playerName,
             score: this.score,
             level: this.level,
             date: new Date().toISOString()

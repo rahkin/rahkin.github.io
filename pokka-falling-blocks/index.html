@@ -86,12 +86,17 @@
         .game-info {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             padding: 20px;
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid var(--pokka-cyan);
             border-radius: 4px;
-            min-width: 200px;
+            min-width: 250px;
+        }
+
+        .score-container, .level-container {
+            font-size: 18px;
+            color: var(--pokka-cyan);
         }
 
         .next-piece {
@@ -156,15 +161,29 @@
         #leaderboard h3 {
             margin-top: 0;
             text-align: center;
+            color: #0DFFF3;
+            font-size: 18px;
+            margin-bottom: 15px;
         }
 
         #leaderboard ol {
             margin: 0;
             padding-left: 25px;
+            list-style-position: inside;
         }
 
         #leaderboard li {
-            margin: 5px 0;
+            margin: 8px 0;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #leaderboard li:hover {
+            background-color: rgba(13, 255, 243, 0.2);
         }
 
         @media (max-width: 768px) {
