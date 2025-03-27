@@ -15,7 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 2; // Exact diameter for collision
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.95; // Slightly less than 2 for precise contact
 
 class Game {
     constructor(canvas) {
@@ -191,10 +191,6 @@ class Game {
         if (this.gameOver || this.paused || !this.started) return;
         
         if (this.activeBubble) {
-            // Store previous position
-            const prevX = this.activeBubble.x;
-            const prevY = this.activeBubble.y;
-            
             // Update bubble position
             this.activeBubble.x += this.activeBubble.dx;
             this.activeBubble.y += this.activeBubble.dy;
@@ -215,36 +211,15 @@ class Game {
             }
             
             // Check collisions with other bubbles
-            let collision = false;
-            let minDistance = Infinity;
-            let closestBubble = null;
-            
             for (const bubble of this.bubbles) {
                 const dx = this.activeBubble.x - bubble.x;
                 const dy = this.activeBubble.y - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestBubble = bubble;
-                }
-                
                 if (distance <= COLLISION_THRESHOLD) {
-                    collision = true;
-                    break;
+                    this.snapBubbleToGrid();
+                    return;
                 }
-            }
-            
-            if (collision && closestBubble) {
-                // Move back to exact touching position
-                const dx = this.activeBubble.x - closestBubble.x;
-                const dy = this.activeBubble.y - closestBubble.y;
-                const angle = Math.atan2(dy, dx);
-                this.activeBubble.x = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
-                this.activeBubble.y = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
-                
-                this.snapBubbleToGrid();
-                return;
             }
         }
         
@@ -256,12 +231,55 @@ class Game {
     }
     
     snapBubbleToGrid() {
+        // Find the nearest grid position
         let nearestRow = Math.round(this.activeBubble.y / (BUBBLE_SPACING * 0.866));
         let nearestCol = Math.round((this.activeBubble.x - (nearestRow % 2 ? BUBBLE_RADIUS : 0)) / BUBBLE_SPACING);
         
         // Ensure the bubble doesn't go outside the grid
         nearestRow = Math.max(0, Math.min(nearestRow, GRID_ROWS - 1));
         nearestCol = Math.max(0, Math.min(nearestCol, GRID_COLS - 1));
+        
+        // Check if position is already occupied
+        const isOccupied = this.bubbles.some(bubble => 
+            bubble.row === nearestRow && bubble.col === nearestCol
+        );
+        
+        if (isOccupied) {
+            // Find the next available position
+            const neighbors = [
+                [0, 0],   // Current position
+                [0, 1],   // Right
+                [0, -1],  // Left
+                [1, 0],   // Below
+                [-1, 0],  // Above
+                [1, 1],   // Below Right
+                [1, -1],  // Below Left
+                [-1, 1],  // Above Right
+                [-1, -1], // Above Left
+            ];
+            
+            for (const [dy, dx] of neighbors) {
+                const newRow = nearestRow + dy;
+                const newCol = nearestCol + dx;
+                
+                // Skip if outside grid
+                if (newRow < 0 || newRow >= GRID_ROWS || 
+                    newCol < 0 || newCol >= GRID_COLS) {
+                    continue;
+                }
+                
+                // Check if this position is free
+                const isFree = !this.bubbles.some(bubble => 
+                    bubble.row === newRow && bubble.col === newCol
+                );
+                
+                if (isFree) {
+                    nearestRow = newRow;
+                    nearestCol = newCol;
+                    break;
+                }
+            }
+        }
         
         // Calculate the actual position
         const x = nearestCol * BUBBLE_SPACING + BUBBLE_RADIUS + (nearestRow % 2 ? BUBBLE_RADIUS : 0);
