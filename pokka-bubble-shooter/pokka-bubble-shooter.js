@@ -15,7 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.6; // Reduced collision threshold for more precise contact
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.1; // Reduced for tighter collisions
 
 class Game {
     constructor(canvas) {
@@ -121,11 +121,7 @@ class Game {
         // Calculate angle between shooter and mouse position
         const dx = this.mouseX - this.shooterX;
         const dy = this.mouseY - this.shooterY;
-        let angle = Math.atan2(-dy, dx) - Math.PI/2;
-        
-        // Normalize angle to be between -PI/2 and PI/2
-        if (angle < -Math.PI) angle += 2*Math.PI;
-        if (angle > Math.PI) angle -= 2*Math.PI;
+        let angle = -Math.atan2(dy, dx) + Math.PI/2;
         
         // Clamp angle between -PI/3 (-60 degrees) and PI/3 (60 degrees)
         this.shooterAngle = Math.max(-Math.PI/3, Math.min(Math.PI/3, angle));
@@ -155,11 +151,11 @@ class Game {
         switch (e.code) {
             case 'ArrowLeft':
                 e.preventDefault();
-                this.shooterAngle = Math.min(this.shooterAngle + 0.1, Math.PI/3);
+                this.shooterAngle = Math.min(this.shooterAngle + 0.1, Math.PI/3);  // Moving left increases angle
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                this.shooterAngle = Math.max(this.shooterAngle - 0.1, -Math.PI/3);
+                this.shooterAngle = Math.max(this.shooterAngle - 0.1, -Math.PI/3);  // Moving right decreases angle
                 break;
             case 'Space':
                 e.preventDefault();
@@ -181,8 +177,8 @@ class Game {
             x: this.shooterX,
             y: this.shooterY,
             color: this.currentBubble.color,
-            dx: Math.sin(this.shooterAngle) * SHOOT_SPEED,
-            dy: -Math.cos(this.shooterAngle) * SHOOT_SPEED
+            dx: Math.sin(this.shooterAngle) * SHOOT_SPEED,  // Use sin for x
+            dy: -Math.cos(this.shooterAngle) * SHOOT_SPEED  // Use -cos for y
         };
         
         // Update current and next bubbles
@@ -225,24 +221,15 @@ class Game {
                     closestBubble = bubble;
                 }
                 
-                if (distance < COLLISION_THRESHOLD) {
+                if (distance <= BUBBLE_RADIUS * 2.1) { // Slightly larger than 2 radii for better contact
                     collision = true;
                     break;
                 }
             }
             
-            if (collision) {
-                // Adjust position to prevent overlap
-                if (closestBubble) {
-                    const dx = this.activeBubble.x - closestBubble.x;
-                    const dy = this.activeBubble.y - closestBubble.y;
-                    const angle = Math.atan2(dy, dx);
-                    
-                    this.activeBubble.x = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
-                    this.activeBubble.y = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
-                }
-                
+            if (collision && closestBubble) {
                 this.snapBubbleToGrid();
+                return;
             }
         }
         
@@ -285,32 +272,56 @@ class Game {
         const matches = new Set();
         const lastBubble = this.bubbles[this.bubbles.length - 1];
         
+        console.log('Checking matches for bubble:', {
+            color: lastBubble.color,
+            row: lastBubble.row,
+            col: lastBubble.col
+        });
+        
         // Find all matching neighbors recursively
         const findMatches = (bubble, color, visited = new Set()) => {
             const key = `${bubble.row},${bubble.col}`;
             if (visited.has(key)) return;
-            
             visited.add(key);
-            if (bubble.color !== color) return;
             
-            matches.add(key);
-            
-            // Check neighbors
-            const neighbors = this.getNeighbors(bubble);
-            for (const neighbor of neighbors) {
-                if (neighbor.color === color) {
+            // Add to matches if color matches
+            if (bubble.color === color) {
+                matches.add(key);
+                console.log('Found matching bubble:', {
+                    row: bubble.row,
+                    col: bubble.col,
+                    color: bubble.color
+                });
+                
+                // Check all neighbors
+                const neighbors = this.getNeighbors(bubble);
+                console.log('Found neighbors:', neighbors.length);
+                for (const neighbor of neighbors) {
                     findMatches(neighbor, color, visited);
                 }
             }
         };
         
+        // Start matching from the last placed bubble
         findMatches(lastBubble, lastBubble.color);
+        
+        console.log('Total matches found:', matches.size);
         
         // Remove matches if there are 3 or more
         if (matches.size >= 3) {
-            this.bubbles = this.bubbles.filter(bubble => 
-                !matches.has(`${bubble.row},${bubble.col}`)
-            );
+            console.log('Removing matched bubbles');
+            this.bubbles = this.bubbles.filter(bubble => {
+                const key = `${bubble.row},${bubble.col}`;
+                const isMatch = !matches.has(key);
+                if (!isMatch) {
+                    console.log('Removing bubble:', {
+                        row: bubble.row,
+                        col: bubble.col,
+                        color: bubble.color
+                    });
+                }
+                return isMatch;
+            });
             
             // Update score
             this.score += matches.size * 100;
@@ -322,15 +333,33 @@ class Game {
     
     getNeighbors(bubble) {
         const neighbors = [];
-        const directions = bubble.row % 2 ? 
-            [[-1,0], [1,0], [0,-1], [0,1], [-1,1], [1,1]] : // odd row
-            [[-1,0], [1,0], [0,-1], [0,1], [-1,-1], [1,-1]]; // even row
+        // Define directions for odd and even rows
+        const directions = bubble.row % 2 === 0 ?
+            [ // Even row
+                [-1,-1], [0,-1], [1,-1],  // Above
+                [-1,0], [1,0],            // Same row
+                [-1,1], [0,1], [1,1]      // Below
+            ] : [ // Odd row
+                [-1,-1], [0,-1], [1,-1],  // Above
+                [-1,0], [1,0],            // Same row
+                [-1,1], [0,1], [1,1]      // Below
+            ];
         
         for (const [dx, dy] of directions) {
+            const newRow = bubble.row + dy;
+            const newCol = bubble.col + dx;
+            
+            // Skip if outside grid
+            if (newRow < 0 || newRow >= GRID_ROWS || 
+                newCol < 0 || newCol >= GRID_COLS) {
+                continue;
+            }
+            
+            // Find any bubble at these coordinates
             const neighbor = this.bubbles.find(b => 
-                b.row === bubble.row + dy && 
-                b.col === bubble.col + dx
+                b.row === newRow && b.col === newCol
             );
+            
             if (neighbor) {
                 neighbors.push(neighbor);
             }
@@ -510,8 +539,8 @@ class Game {
         this.ctx.beginPath();
         this.ctx.moveTo(this.shooterX, this.shooterY);
         this.ctx.lineTo(
-            this.shooterX + Math.sin(this.shooterAngle) * SHOOTER_HEIGHT,
-            this.shooterY - Math.cos(this.shooterAngle) * SHOOTER_HEIGHT
+            this.shooterX + Math.cos(this.shooterAngle) * SHOOTER_HEIGHT,
+            this.shooterY - Math.sin(this.shooterAngle) * SHOOTER_HEIGHT
         );
         this.ctx.strokeStyle = '#FFFFFF';
         this.ctx.lineWidth = 2;
@@ -536,8 +565,8 @@ class Game {
             this.bubbles = [];
             this.activeBubble = null;
             
-            // Reset shooter state to 0 degrees (straight up)
-            this.shooterAngle = 0;
+            // Reset shooter state to straight up (PI/2)
+            this.shooterAngle = Math.PI / 2;
             this.currentBubble = {
                 color: COLORS[Math.floor(Math.random() * COLORS.length)],
                 x: this.shooterX,
