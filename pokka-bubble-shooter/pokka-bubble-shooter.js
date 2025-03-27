@@ -405,7 +405,7 @@ class Game {
         
         this.ctx.font = '20px "One Little Font"';
         this.ctx.fillText(
-            'Click to Start',
+            'Click START to play!',
             CANVAS_WIDTH / 2,
             CANVAS_HEIGHT / 2 + 40
         );

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokka's Bubble Shooter</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=One+Little+Font&display=swap" rel="stylesheet">
     <style>
         :root {
             --pokka-cyan: #0DFFF3;
@@ -20,7 +20,7 @@
         body {
             background-color: #000;
             color: #fff;
-            font-family: 'Press Start 2P', cursive;
+            font-family: 'One Little Font', cursive;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -40,6 +40,8 @@
             box-shadow: 0 0 10px var(--pokka-cyan);
             margin: 0 auto;
             display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
 
         .controls {
@@ -54,7 +56,7 @@
             border: 2px solid var(--pokka-cyan);
             color: var(--pokka-cyan);
             padding: 10px 20px;
-            font-family: 'Press Start 2P', cursive;
+            font-family: 'One Little Font', cursive;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -107,10 +109,27 @@
         <canvas id="gameCanvas"></canvas>
         
         <div class="controls">
-            <button id="startButton">START</button>
+            <button id="startButton" onclick="window.game.start()">START</button>
         </div>
     </div>
 
     <script src="pokka-bubble-shooter.js"></script>
+    <script>
+        // Ensure the game starts properly
+        window.addEventListener('load', () => {
+            if (window.game) {
+                console.log('Game loaded successfully');
+                // Add direct click handler to canvas
+                document.getElementById('gameCanvas').onclick = function(e) {
+                    e.preventDefault();
+                    if (!window.game.started || window.game.gameOver) {
+                        window.game.start();
+                    }
+                };
+            } else {
+                console.error('Game failed to load');
+            }
+        });
+    </script>
 </body>
 </html> 
