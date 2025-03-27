@@ -15,7 +15,7 @@ const GRID_ROWS = 9;
 const GRID_COLS = 15;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.6; // Reduced for more precise collisions
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 2.0; // Exact diameter for collision
 
 class Game {
     constructor(canvas) {
@@ -195,13 +195,9 @@ class Game {
         if (this.gameOver || this.paused || !this.started) return;
         
         if (this.activeBubble) {
-            // Store current position
-            const currentX = this.activeBubble.x;
-            const currentY = this.activeBubble.y;
-            
             // Calculate next position
-            const nextX = currentX + this.activeBubble.dx;
-            const nextY = currentY + this.activeBubble.dy;
+            const nextX = this.activeBubble.x + this.activeBubble.dx;
+            const nextY = this.activeBubble.y + this.activeBubble.dy;
             
             // Check ceiling collision first
             if (nextY <= BUBBLE_RADIUS) {
@@ -231,46 +227,35 @@ class Game {
             let closestBubble = null;
             let minDistance = Infinity;
             
-            // First pass: find closest bubble
+            // Find closest bubble at next position
             for (const bubble of this.bubbles) {
                 const dx = nextX - bubble.x;
                 const dy = nextY - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Track closest bubble
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestBubble = bubble;
                 }
-            }
-            
-            // Check if we're about to collide with the closest bubble
-            if (closestBubble) {
-                const dx = nextX - closestBubble.x;
-                const dy = nextY - closestBubble.y;
-                const nextDistance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Also check current distance to ensure we're getting closer
-                const currentDx = currentX - closestBubble.x;
-                const currentDy = currentY - closestBubble.y;
-                const currentDistance = Math.sqrt(currentDx * currentDx + currentDy * currentDy);
-                
-                // Only collide if we're getting closer and within threshold
-                if (nextDistance < currentDistance && nextDistance <= COLLISION_THRESHOLD) {
+                // Check for collision at exact diameter distance
+                if (distance <= BUBBLE_RADIUS * 2.0) {
                     collision = true;
+                    break;
                 }
             }
             
             if (collision && closestBubble) {
-                // Calculate exact touching position
-                const dx = currentX - closestBubble.x;
-                const dy = currentY - closestBubble.y;
+                // Calculate angle between bubbles
+                const dx = nextX - closestBubble.x;
+                const dy = nextY - closestBubble.y;
                 const angle = Math.atan2(dy, dx);
                 
-                // Place bubble at exact touching position
-                this.activeBubble.x = closestBubble.x + Math.cos(angle) * BUBBLE_SPACING;
-                this.activeBubble.y = closestBubble.y + Math.sin(angle) * BUBBLE_SPACING;
+                // Place bubble at exact diameter distance
+                this.activeBubble.x = closestBubble.x + Math.cos(angle) * (BUBBLE_RADIUS * 2.0);
+                this.activeBubble.y = closestBubble.y + Math.sin(angle) * (BUBBLE_RADIUS * 2.0);
                 
+                // Immediately snap to grid
                 this.snapBubbleToGrid(false);
             } else {
                 // No collision, update position
@@ -310,35 +295,18 @@ class Game {
         const isOddRow = row % 2 === 1;
         const col = Math.round((this.activeBubble.x - (isOddRow ? BUBBLE_RADIUS : 0)) / BUBBLE_SPACING);
         
-        // Validate position
-        if (row < 0 || row >= GRID_ROWS || col < 0 || col >= GRID_COLS) {
-            // If invalid, force to nearest valid position
-            const validRow = Math.max(0, Math.min(row, GRID_ROWS - 1));
-            const validCol = Math.max(0, Math.min(col, GRID_COLS - 1));
-            
-            const x = validCol * BUBBLE_SPACING + BUBBLE_RADIUS + (validRow % 2 ? BUBBLE_RADIUS : 0);
-            const y = validRow * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS;
-            
-            this.bubbles.push({
-                x,
-                y,
-                color: this.activeBubble.color,
-                row: validRow,
-                col: validCol
-            });
-        } else {
-            // Position is valid, use calculated position
-            const x = col * BUBBLE_SPACING + BUBBLE_RADIUS + (isOddRow ? BUBBLE_RADIUS : 0);
-            const y = row * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS;
-            
-            this.bubbles.push({
-                x,
-                y,
-                color: this.activeBubble.color,
-                row,
-                col
-            });
-        }
+        // Calculate exact grid position
+        const x = col * BUBBLE_SPACING + BUBBLE_RADIUS + (isOddRow ? BUBBLE_RADIUS : 0);
+        const y = row * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS;
+        
+        // Add bubble to grid
+        this.bubbles.push({
+            x,
+            y,
+            color: this.activeBubble.color,
+            row,
+            col
+        });
         
         this.checkMatches();
         this.activeBubble = null;
