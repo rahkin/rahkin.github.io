@@ -1,7 +1,7 @@
 // Game constants
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
-const BLOCK_SIZE = 30;
+const BLOCK_SIZE = 25;  // Reduced block size for better fit
 const COLORS = [
     '#FF0D0D', // red
     '#0DFF1D', // green
@@ -35,8 +35,8 @@ class Game {
         this.canvas.height = BLOCK_SIZE * BOARD_HEIGHT;
         
         // Scale up the canvas display size while maintaining internal resolution
-        this.canvas.style.width = (BLOCK_SIZE * BOARD_WIDTH * 1.2) + 'px';
-        this.canvas.style.height = (BLOCK_SIZE * BOARD_HEIGHT * 1.2) + 'px';
+        this.canvas.style.width = (BLOCK_SIZE * BOARD_WIDTH * 1.5) + 'px';
+        this.canvas.style.height = (BLOCK_SIZE * BOARD_HEIGHT * 1.5) + 'px';
         
         this.board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
         this.score = 0;
@@ -246,18 +246,23 @@ class Game {
         
         switch (event.code) {
             case 'ArrowLeft':
+                event.preventDefault();
                 this.moveLeft();
                 break;
             case 'ArrowRight':
+                event.preventDefault();
                 this.moveRight();
                 break;
             case 'ArrowDown':
+                event.preventDefault();
                 this.moveDown();
                 break;
             case 'ArrowUp':
+                event.preventDefault();
                 this.rotate();
                 break;
             case 'Space':
+                event.preventDefault();
                 while (this.moveDown());
                 break;
             case 'KeyP':
