@@ -2,6 +2,7 @@
 const CANVAS_WIDTH = 400;
 const CANVAS_HEIGHT = 600;
 const BUBBLE_RADIUS = 20;
+const BUBBLE_SPACING = BUBBLE_RADIUS * 1.8; // Tighter spacing between bubbles
 const SHOOTER_HEIGHT = 60;
 const COLORS = [
     '#FF0D0D', // red
@@ -14,6 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.8; // Distance at which bubbles collide
 
 class Game {
     constructor(canvas) {
@@ -82,8 +84,8 @@ class Game {
         // Initialize bubble grid
         for (let row = 0; row < GRID_ROWS / 2; row++) {
             for (let col = 0; col < GRID_COLS; col++) {
-                const x = col * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS + (row % 2 ? BUBBLE_RADIUS : 0);
-                const y = row * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS;
+                const x = col * BUBBLE_SPACING + BUBBLE_RADIUS + (row % 2 ? BUBBLE_RADIUS : 0);
+                const y = row * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS; // 0.866 = sin(60°) for hexagonal grid
                 const color = COLORS[Math.floor(Math.random() * COLORS.length)];
                 
                 this.bubbles.push({
@@ -205,18 +207,24 @@ class Game {
             // Check ceiling collision
             if (this.activeBubble.y <= BUBBLE_RADIUS) {
                 this.snapBubbleToGrid();
+                return;
             }
             
             // Check collisions with other bubbles
+            let collision = false;
             for (const bubble of this.bubbles) {
                 const dx = this.activeBubble.x - bubble.x;
                 const dy = this.activeBubble.y - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < BUBBLE_RADIUS * 2) {
-                    this.snapBubbleToGrid();
+                if (distance < COLLISION_THRESHOLD) {
+                    collision = true;
                     break;
                 }
+            }
+            
+            if (collision) {
+                this.snapBubbleToGrid();
             }
         }
         
@@ -228,17 +236,24 @@ class Game {
     }
     
     snapBubbleToGrid() {
-        // Find nearest grid position
-        const col = Math.round(this.activeBubble.x / (BUBBLE_RADIUS * 2));
-        const row = Math.round(this.activeBubble.y / (BUBBLE_RADIUS * 2));
+        let nearestRow = Math.round(this.activeBubble.y / (BUBBLE_SPACING * 0.866));
+        let nearestCol = Math.round((this.activeBubble.x - (nearestRow % 2 ? BUBBLE_RADIUS : 0)) / BUBBLE_SPACING);
+        
+        // Ensure the bubble doesn't go outside the grid
+        nearestRow = Math.max(0, Math.min(nearestRow, GRID_ROWS - 1));
+        nearestCol = Math.max(0, Math.min(nearestCol, GRID_COLS - 1));
+        
+        // Calculate the actual position
+        const x = nearestCol * BUBBLE_SPACING + BUBBLE_RADIUS + (nearestRow % 2 ? BUBBLE_RADIUS : 0);
+        const y = nearestRow * (BUBBLE_SPACING * 0.866) + BUBBLE_RADIUS;
         
         // Add bubble to grid
         this.bubbles.push({
-            x: col * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS + (row % 2 ? BUBBLE_RADIUS : 0),
-            y: row * (BUBBLE_RADIUS * 2) + BUBBLE_RADIUS,
+            x,
+            y,
             color: this.activeBubble.color,
-            row,
-            col
+            row: nearestRow,
+            col: nearestCol
         });
         
         // Check for matches
@@ -265,7 +280,9 @@ class Game {
             // Check neighbors
             const neighbors = this.getNeighbors(bubble);
             for (const neighbor of neighbors) {
-                findMatches(neighbor, color, visited);
+                if (neighbor.color === color) {
+                    findMatches(neighbor, color, visited);
+                }
             }
         };
         
