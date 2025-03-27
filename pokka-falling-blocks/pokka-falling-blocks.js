@@ -69,25 +69,32 @@ class Game {
         // Draw start screen
         this.drawStartScreen();
         
-        // Load leaderboard
+        // Load leaderboard but keep it hidden initially
         this.leaderboard = this.loadLeaderboard();
         this.updateLeaderboardDisplay();
+        document.getElementById('leaderboard').classList.add('hidden');
         
         this.playerName = '';
     }
 
     start() {
         if (!this.started) {
-            // Prompt for player name
-            let name = prompt('Enter your name:', localStorage.getItem('lastPlayerName') || '');
-            if (!name) return; // Don't start if no name provided
-            
-            name = name.trim();
-            if (name.length > 20) name = name.substring(0, 20); // Limit name length
-            if (name.length === 0) name = 'Anonymous';
+            // Prompt for player name with validation
+            let name = null;
+            while (!name) {
+                name = prompt('Enter your name to start playing:', localStorage.getItem('lastPlayerName') || '');
+                if (name === null) return; // User clicked cancel
+                name = name.trim();
+                if (name.length === 0) {
+                    alert('Please enter a name to play!');
+                    name = null;
+                } else if (name.length > 20) {
+                    name = name.substring(0, 20);
+                }
+            }
             
             this.playerName = name;
-            localStorage.setItem('lastPlayerName', name); // Remember name for next time
+            localStorage.setItem('lastPlayerName', name);
             
             this.started = true;
             this.gameOver = false;
@@ -103,6 +110,10 @@ class Game {
             this.nextPiece = SHAPES[Math.floor(Math.random() * SHAPES.length)];
             this.nextColor = COLORS[Math.floor(Math.random() * COLORS.length)];
             this.spawnPiece();
+
+            // Show leaderboard after starting
+            document.getElementById('leaderboard').classList.remove('hidden');
+            document.getElementById('leaderboard').classList.add('visible');
         }
     }
 
@@ -490,5 +501,18 @@ window.addEventListener('load', () => {
     // Add start button listener
     document.getElementById('startButton').addEventListener('click', () => {
         window.game.start();
+    });
+
+    // Add leaderboard toggle listener
+    document.getElementById('showLeaderboard').addEventListener('click', () => {
+        const leaderboard = document.getElementById('leaderboard');
+        if (leaderboard.classList.contains('visible')) {
+            leaderboard.classList.remove('visible');
+            leaderboard.classList.add('hidden');
+        } else {
+            leaderboard.classList.remove('hidden');
+            leaderboard.classList.add('visible');
+            window.game.updateLeaderboardDisplay(); // Refresh leaderboard data
+        }
     });
 }); 

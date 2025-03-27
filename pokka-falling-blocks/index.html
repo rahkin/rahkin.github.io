@@ -217,6 +217,27 @@
                 font-size: 14px;
             }
         }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #leaderboard.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -226,8 +247,7 @@
 
     <nav class="nav-links">
         <a href="../">← Back to Arcade</a>
-        <a href="#" onclick="window.location.reload()">Start Game</a>
-        <a href="https://pancakeswap.finance/swap?outputCurrency=0xb82f36fb31bF0Be873879C031DE4150d40AfDda9&inputCurrency=BNB" target="_blank">Trade $pokka</a>
+        <a href="https://pancakeswap.finance/swap?outputCurrency=0xb82f36fb31bF0Be873879c031DE4150d40AfDda9&inputCurrency=BNB" target="_blank">Trade $pokka</a>
         <a href="https://aiai.now" target="_blank">AIAI Society</a>
         <a href="https://x.com/Pokka_AIAI" target="_blank">Pokka's X</a>
     </nav>
@@ -247,10 +267,13 @@
                 <h3>Next Piece</h3>
                 <canvas id="nextCanvas" width="120" height="120"></canvas>
             </div>
-            <button id="startButton">Start Game</button>
+            <div class="button-container">
+                <button id="startButton">Start Game</button>
+                <button id="showLeaderboard">Leaderboard</button>
+            </div>
             
-            <div id="leaderboard">
-                <h3>High Scores</h3>
+            <div id="leaderboard" class="hidden">
+                <h3>Global High Scores</h3>
                 <p>No scores yet!</p>
             </div>
         </div>
