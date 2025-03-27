@@ -1,44 +1,45 @@
 class SoundManager {
     constructor() {
         this.sounds = {};
-        this.isMuted = false;
-
-        // Define sound effects
-        this.loadSound('move', 'assets/sounds/move.mp3');
-        this.loadSound('rotate', 'assets/sounds/rotate.mp3');
-        this.loadSound('land', 'assets/sounds/land.mp3');
-        this.loadSound('clear', 'assets/sounds/clear.mp3');
-        this.loadSound('levelup', 'assets/sounds/levelup.mp3');
-        this.loadSound('gameover', 'assets/sounds/gameover.mp3');
+        this.muted = false;
+        this.loadSounds();
     }
 
-    loadSound(name, path) {
-        this.sounds[name] = new Audio(path);
-        this.sounds[name].load();
+    loadSounds() {
+        const soundFiles = {
+            move: 'assets/sounds/move.mp3',
+            rotate: 'assets/sounds/rotate.mp3',
+            land: 'assets/sounds/land.mp3',
+            clear: 'assets/sounds/clear.mp3',
+            levelup: 'assets/sounds/levelup.mp3',
+            gameover: 'assets/sounds/gameover.mp3'
+        };
+
+        for (const [name, path] of Object.entries(soundFiles)) {
+            const audio = new Audio(path);
+            audio.preload = 'auto';
+            this.sounds[name] = audio;
+        }
     }
 
     play(soundName) {
-        if (this.isMuted || !this.sounds[soundName]) return;
+        if (this.muted || !this.sounds[soundName]) return;
         
-        // Stop and reset the sound before playing
-        this.sounds[soundName].currentTime = 0;
-        
-        // Play the sound
-        this.sounds[soundName].play().catch(error => {
-            console.log(`Error playing sound ${soundName}:`, error);
-        });
+        // Clone the audio to allow multiple simultaneous plays
+        const sound = this.sounds[soundName].cloneNode();
+        sound.volume = 0.5; // Set volume to 50%
+        sound.play().catch(error => console.log('Error playing sound:', error));
     }
 
     toggleMute() {
-        this.isMuted = !this.isMuted;
-        return this.isMuted;
+        this.muted = !this.muted;
+        return this.muted;
     }
 
-    setMute(mute) {
-        this.isMuted = mute;
+    setMute(muted) {
+        this.muted = muted;
     }
 }
 
-// Create and export a single instance
-const soundManager = new SoundManager();
-export default soundManager; 
+// Create a global instance
+window.soundManager = new SoundManager(); 
