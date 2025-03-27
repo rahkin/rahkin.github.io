@@ -19,7 +19,7 @@ let gameState = {
 
 // Load Pokka image
 const pokkaImage = new Image();
-pokkaImage.src = 'assets/images/pokka.png';
+pokkaImage.src = '../assets/images/pokka.png';
 
 // Load Ghost images
 const ghostImages = {
@@ -31,18 +31,18 @@ const ghostImages = {
 };
 
 // Set ghost image sources
-ghostImages.pink.normal.src = 'assets/images/andy.png';
-ghostImages.blue.normal.src = 'assets/images/siren.png';
-ghostImages.purple.normal.src = 'assets/images/aicz.png';
-ghostImages.skin.normal.src = 'assets/images/banana.png';
-ghostImages.lightPink.normal.src = 'assets/images/mubarak.png';
+ghostImages.pink.normal.src = '../assets/images/andy.png';
+ghostImages.blue.normal.src = '../assets/images/siren.png';
+ghostImages.purple.normal.src = '../assets/images/aicz.png';
+ghostImages.skin.normal.src = '../assets/images/banana.png';
+ghostImages.lightPink.normal.src = '../assets/images/mubarak.png';
 
 // Set scared ghost images - using aiai.png for scared state
-ghostImages.pink.scared.src = 'assets/images/aiai.png';
-ghostImages.blue.scared.src = 'assets/images/aiai.png';
-ghostImages.purple.scared.src = 'assets/images/aiai.png';
-ghostImages.skin.scared.src = 'assets/images/aiai.png';
-ghostImages.lightPink.scared.src = 'assets/images/aiai.png';
+ghostImages.pink.scared.src = '../assets/images/aiai.png';
+ghostImages.blue.scared.src = '../assets/images/aiai.png';
+ghostImages.purple.scared.src = '../assets/images/aiai.png';
+ghostImages.skin.scared.src = '../assets/images/aiai.png';
+ghostImages.lightPink.scared.src = '../assets/images/aiai.png';
 
 // Canvas Setup
 const canvas = document.getElementById('gameCanvas');
@@ -55,7 +55,7 @@ let dots = [];
 let powerPellets = [];
 
 // Import sound manager
-import soundManager from './assets/sounds/soundManager.js';
+import soundManager from '../assets/sounds/soundManager.js';
 
 // Initialize Game
 function initGame() {
