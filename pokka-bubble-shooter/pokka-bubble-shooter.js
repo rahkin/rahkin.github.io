@@ -15,7 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.95; // Slightly less than 2 for precise contact
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.8; // Reduced for exact contact
 
 class Game {
     constructor(canvas) {
@@ -191,10 +191,6 @@ class Game {
         if (this.gameOver || this.paused || !this.started) return;
         
         if (this.activeBubble) {
-            // Store previous position
-            const prevX = this.activeBubble.x;
-            const prevY = this.activeBubble.y;
-            
             // Update bubble position
             this.activeBubble.x += this.activeBubble.dx;
             this.activeBubble.y += this.activeBubble.dy;
@@ -223,15 +219,36 @@ class Game {
             }
             
             // Check collisions with other bubbles
+            let collision = false;
+            let minDistance = Infinity;
+            let closestBubble = null;
+            
             for (const bubble of this.bubbles) {
                 const dx = this.activeBubble.x - bubble.x;
                 const dy = this.activeBubble.y - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance <= COLLISION_THRESHOLD) {
-                    this.snapBubbleToGrid();
-                    return;
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestBubble = bubble;
                 }
+                
+                if (distance <= COLLISION_THRESHOLD) {
+                    collision = true;
+                    break;
+                }
+            }
+            
+            if (collision && closestBubble) {
+                // Move back to exact touching position
+                const dx = this.activeBubble.x - closestBubble.x;
+                const dy = this.activeBubble.y - closestBubble.y;
+                const angle = Math.atan2(dy, dx);
+                this.activeBubble.x = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
+                this.activeBubble.y = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
+                
+                this.snapBubbleToGrid();
+                return;
             }
         }
         
@@ -334,8 +351,8 @@ class Game {
     
     getNeighbors(bubble) {
         const neighbors = [];
-        // Define directions for odd and even rows
-        const directions = bubble.row % 2 === 0 ?
+        // Define directions based on row parity (odd/even)
+        const directions = bubble.row % 2 === 0 ? 
             [ // Even row
                 [-1,-1], [0,-1], [1,-1],  // Above
                 [-1,0], [1,0],            // Same row
@@ -362,7 +379,14 @@ class Game {
             );
             
             if (neighbor) {
-                neighbors.push(neighbor);
+                // Calculate actual distance to ensure it's a real neighbor
+                const dx = bubble.x - neighbor.x;
+                const dy = bubble.y - neighbor.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance <= BUBBLE_SPACING * 1.1) {
+                    neighbors.push(neighbor);
+                }
             }
         }
         
