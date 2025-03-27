@@ -27,14 +27,16 @@ class Game {
     constructor(canvas) {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
+        this.nextCanvas = document.getElementById('nextCanvas');
+        this.nextCtx = this.nextCanvas.getContext('2d');
         
         // Set canvas size
         this.canvas.width = BLOCK_SIZE * BOARD_WIDTH;
         this.canvas.height = BLOCK_SIZE * BOARD_HEIGHT;
         
         // Scale up the canvas display size while maintaining internal resolution
-        this.canvas.style.width = (BLOCK_SIZE * BOARD_WIDTH * 1.5) + 'px';
-        this.canvas.style.height = (BLOCK_SIZE * BOARD_HEIGHT * 1.5) + 'px';
+        this.canvas.style.width = (BLOCK_SIZE * BOARD_WIDTH * 2) + 'px';
+        this.canvas.style.height = (BLOCK_SIZE * BOARD_HEIGHT * 2) + 'px';
         
         this.board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
         this.score = 0;
@@ -42,11 +44,17 @@ class Game {
         this.gameOver = false;
         this.paused = false;
         
-        // Current piece state
+        // Current and next piece state
         this.currentPiece = null;
         this.currentX = 0;
         this.currentY = 0;
         this.currentColor = '';
+        this.nextPiece = null;
+        this.nextColor = '';
+        
+        // Update score and level displays
+        document.getElementById('score').textContent = this.score;
+        document.getElementById('level').textContent = this.level;
         
         // Bind event handlers
         document.addEventListener('keydown', this.handleKeyPress.bind(this));
@@ -56,21 +64,70 @@ class Game {
         this.lastDrop = Date.now();
         this.gameLoop();
         
-        // Spawn first piece
+        // Spawn first pieces
+        this.nextPiece = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+        this.nextColor = COLORS[Math.floor(Math.random() * COLORS.length)];
         this.spawnPiece();
     }
     
     spawnPiece() {
-        const shapeIndex = Math.floor(Math.random() * SHAPES.length);
-        this.currentPiece = SHAPES[shapeIndex];
-        this.currentColor = COLORS[shapeIndex];
+        this.currentPiece = this.nextPiece;
+        this.currentColor = this.nextColor;
         this.currentX = Math.floor((BOARD_WIDTH - this.currentPiece[0].length) / 2);
         this.currentY = 0;
+        
+        // Generate next piece
+        const shapeIndex = Math.floor(Math.random() * SHAPES.length);
+        this.nextPiece = SHAPES[shapeIndex];
+        this.nextColor = COLORS[shapeIndex];
+        
+        // Draw next piece preview
+        this.drawNextPiece();
         
         // Check for game over
         if (!this.isValidMove(0, 0)) {
             this.gameOver = true;
             window.soundManager.play('gameover');
+        }
+    }
+    
+    drawNextPiece() {
+        // Clear next piece canvas
+        this.nextCtx.fillStyle = '#000000';
+        this.nextCtx.fillRect(0, 0, this.nextCanvas.width, this.nextCanvas.height);
+        
+        // Calculate scaling to fit the preview canvas
+        const blockSize = Math.min(
+            (this.nextCanvas.width - 20) / this.nextPiece[0].length,
+            (this.nextCanvas.height - 20) / this.nextPiece.length
+        );
+        
+        // Calculate centering offsets
+        const offsetX = (this.nextCanvas.width - (this.nextPiece[0].length * blockSize)) / 2;
+        const offsetY = (this.nextCanvas.height - (this.nextPiece.length * blockSize)) / 2;
+        
+        // Draw next piece
+        for (let y = 0; y < this.nextPiece.length; y++) {
+            for (let x = 0; x < this.nextPiece[y].length; x++) {
+                if (this.nextPiece[y][x]) {
+                    const blockX = offsetX + (x * blockSize);
+                    const blockY = offsetY + (y * blockSize);
+                    
+                    // Main block
+                    this.nextCtx.fillStyle = this.nextColor;
+                    this.nextCtx.fillRect(blockX, blockY, blockSize, blockSize);
+                    
+                    // Highlight
+                    this.nextCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    this.nextCtx.fillRect(blockX, blockY, blockSize, 2);
+                    this.nextCtx.fillRect(blockX, blockY, 2, blockSize);
+                    
+                    // Shadow
+                    this.nextCtx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    this.nextCtx.fillRect(blockX + blockSize - 2, blockY, 2, blockSize);
+                    this.nextCtx.fillRect(blockX, blockY + blockSize - 2, blockSize, 2);
+                }
+            }
         }
     }
     
@@ -149,12 +206,14 @@ class Game {
         // Update score and level
         if (linesCleared > 0) {
             this.score += linesCleared * linesCleared * 100 * this.level;
+            document.getElementById('score').textContent = this.score;
             window.soundManager.play('clear');
             
             // Level up every 10 lines
             const newLevel = Math.floor(this.score / 1000) + 1;
             if (newLevel > this.level) {
                 this.level = newLevel;
+                document.getElementById('level').textContent = this.level;
                 this.dropInterval = Math.max(100, 1000 - (this.level - 1) * 100);
                 window.soundManager.play('levelup');
             }
@@ -234,12 +293,6 @@ class Game {
                 }
             }
         }
-        
-        // Draw UI
-        this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.font = '20px "Press Start 2P"';
-        this.ctx.fillText(`Score: ${this.score}`, 10, 30);
-        this.ctx.fillText(`Level: ${this.level}`, 10, 60);
         
         if (this.gameOver) {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
