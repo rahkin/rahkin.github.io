@@ -151,11 +151,11 @@ class Game {
         switch (e.code) {
             case 'ArrowLeft':
                 e.preventDefault();
-                this.shooterAngle = Math.min(this.shooterAngle + 0.1, Math.PI/3);  // Moving left increases angle
+                this.shooterAngle = Math.max(this.shooterAngle - 0.1, -Math.PI/3);  // Moving left decreases angle
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                this.shooterAngle = Math.max(this.shooterAngle - 0.1, -Math.PI/3);  // Moving right decreases angle
+                this.shooterAngle = Math.min(this.shooterAngle + 0.1, Math.PI/3);  // Moving right increases angle
                 break;
             case 'Space':
                 e.preventDefault();
@@ -539,8 +539,8 @@ class Game {
         this.ctx.beginPath();
         this.ctx.moveTo(this.shooterX, this.shooterY);
         this.ctx.lineTo(
-            this.shooterX + Math.cos(this.shooterAngle) * SHOOTER_HEIGHT,
-            this.shooterY - Math.sin(this.shooterAngle) * SHOOTER_HEIGHT
+            this.shooterX + Math.sin(this.shooterAngle) * SHOOTER_HEIGHT,
+            this.shooterY - Math.cos(this.shooterAngle) * SHOOTER_HEIGHT
         );
         this.ctx.strokeStyle = '#FFFFFF';
         this.ctx.lineWidth = 2;
