@@ -15,7 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.8; // Distance at which bubbles collide
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.6; // Reduced collision threshold for more precise contact
 
 class Game {
     constructor(canvas) {
@@ -212,10 +212,18 @@ class Game {
             
             // Check collisions with other bubbles
             let collision = false;
+            let minDistance = Infinity;
+            let closestBubble = null;
+            
             for (const bubble of this.bubbles) {
                 const dx = this.activeBubble.x - bubble.x;
                 const dy = this.activeBubble.y - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestBubble = bubble;
+                }
                 
                 if (distance < COLLISION_THRESHOLD) {
                     collision = true;
@@ -224,6 +232,16 @@ class Game {
             }
             
             if (collision) {
+                // Adjust position to prevent overlap
+                if (closestBubble) {
+                    const dx = this.activeBubble.x - closestBubble.x;
+                    const dy = this.activeBubble.y - closestBubble.y;
+                    const angle = Math.atan2(dy, dx);
+                    
+                    this.activeBubble.x = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
+                    this.activeBubble.y = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
+                }
+                
                 this.snapBubbleToGrid();
             }
         }
