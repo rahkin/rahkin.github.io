@@ -119,10 +119,10 @@ class Game {
         // Calculate angle between shooter and mouse position
         const dx = this.mouseX - this.shooterX;
         const dy = this.mouseY - this.shooterY;
-        this.shooterAngle = Math.atan2(dy, dx);
+        this.shooterAngle = Math.atan2(-dy, dx);
         
-        // Clamp angle between PI/2 (90 degrees) and 4PI/3 (240 degrees)
-        this.shooterAngle = Math.max(Math.PI/2, Math.min(4*Math.PI/3, this.shooterAngle));
+        // Clamp angle between -PI/2 (-90 degrees) and -PI/3 (-60 degrees)
+        this.shooterAngle = Math.max(-Math.PI/2, Math.min(-Math.PI/3, this.shooterAngle));
     }
     
     handleClick(e) {
@@ -149,11 +149,11 @@ class Game {
         switch (e.code) {
             case 'ArrowLeft':
                 e.preventDefault();
-                this.shooterAngle = Math.min(this.shooterAngle + 0.1, 4*Math.PI/3);
+                this.shooterAngle = Math.min(this.shooterAngle + 0.1, -Math.PI/3);
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                this.shooterAngle = Math.max(this.shooterAngle - 0.1, Math.PI/2);
+                this.shooterAngle = Math.max(this.shooterAngle - 0.1, -Math.PI/2);
                 break;
             case 'Space':
                 e.preventDefault();
@@ -175,8 +175,8 @@ class Game {
             x: this.shooterX,
             y: this.shooterY,
             color: this.currentBubble.color,
-            dx: Math.cos(this.shooterAngle) * SHOOT_SPEED,
-            dy: Math.sin(this.shooterAngle) * SHOOT_SPEED
+            dx: Math.sin(this.shooterAngle) * SHOOT_SPEED,
+            dy: -Math.cos(this.shooterAngle) * SHOOT_SPEED
         };
         
         // Update current and next bubbles
@@ -471,8 +471,8 @@ class Game {
         this.ctx.beginPath();
         this.ctx.moveTo(this.shooterX, this.shooterY);
         this.ctx.lineTo(
-            this.shooterX + Math.cos(this.shooterAngle) * SHOOTER_HEIGHT,
-            this.shooterY + Math.sin(this.shooterAngle) * SHOOTER_HEIGHT
+            this.shooterX + Math.sin(this.shooterAngle) * SHOOTER_HEIGHT,
+            this.shooterY - Math.cos(this.shooterAngle) * SHOOTER_HEIGHT
         );
         this.ctx.strokeStyle = '#FFFFFF';
         this.ctx.lineWidth = 2;
