@@ -35,8 +35,8 @@ class Game {
         this.canvas.height = BLOCK_SIZE * BOARD_HEIGHT;
         
         // Scale up the canvas display size while maintaining internal resolution
-        this.canvas.style.width = (BLOCK_SIZE * BOARD_WIDTH * 2) + 'px';
-        this.canvas.style.height = (BLOCK_SIZE * BOARD_HEIGHT * 2) + 'px';
+        this.canvas.style.width = (BLOCK_SIZE * BOARD_WIDTH * 1.2) + 'px';
+        this.canvas.style.height = (BLOCK_SIZE * BOARD_HEIGHT * 1.2) + 'px';
         
         this.board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
         this.score = 0;
