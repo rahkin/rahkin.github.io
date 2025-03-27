@@ -65,32 +65,50 @@ body {
 /* Navigation */
 .nav-links {
     display: flex;
-    justify-content: center;
-    gap: 20px;
     flex-wrap: wrap;
-    padding: 15px 0;
-    margin: 10px 0;
+    justify-content: center;
+    gap: 10px;
+    margin: 1rem 0;
 }
 
 .nav-button {
-    background: rgba(0, 0, 0, 0.85);
-    color: var(--pokka-white);
-    text-decoration: none;
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
+    border: none;
     padding: 10px 20px;
-    border-radius: 25px;
-    border: 2px solid var(--pokka-cyan);
+    font-family: 'One Little Font', cursive;
     font-size: 1em;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(64, 224, 208, 0.2);
     cursor: pointer;
-    font-family: 'Press Start 2P', cursive;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--pokka-shadow);
 }
 
 .nav-button:hover {
-    background: var(--background-gradient);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--pokka-shadow);
+}
+
+.back-button {
+    background: var(--pokka-cyan);
     color: var(--pokka-dark);
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(64, 224, 208, 0.5);
+    font-weight: bold;
+    position: relative;
+    padding-left: 35px;
+}
+
+.back-button::before {
+    content: "←";
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+}
+
+.back-button:hover {
+    background: var(--pokka-orange);
 }
 
 /* Game control buttons (Start Game, How to Play, Leaderboard) */
@@ -297,7 +315,7 @@ body {
     .nav-button {
         width: 100%;
         text-align: center;
-        padding: 15px 20px;
+        padding: 12px 20px;
         font-size: 0.9em;
     }
     
@@ -348,6 +366,14 @@ body {
         padding: 12px 20px;
         margin: 8px;
         min-width: 120px;
+    }
+
+    .back-button {
+        padding-left: 30px;
+    }
+    
+    .back-button::before {
+        left: 12px;
     }
 }
 
