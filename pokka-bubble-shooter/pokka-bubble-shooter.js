@@ -466,4 +466,18 @@ class Game {
 window.addEventListener('load', () => {
     const canvas = document.getElementById('gameCanvas');
     window.game = new Game(canvas);
+    
+    // Add start button listener
+    document.getElementById('startButton').addEventListener('click', () => {
+        if (!window.game.started || window.game.gameOver) {
+            window.game.start();
+        }
+    });
+    
+    // Add canvas click listener for starting game
+    canvas.addEventListener('click', () => {
+        if (!window.game.started || window.game.gameOver) {
+            window.game.start();
+        }
+    });
 }); 
