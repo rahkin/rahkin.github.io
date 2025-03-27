@@ -119,10 +119,14 @@ class Game {
         // Calculate angle between shooter and mouse position
         const dx = this.mouseX - this.shooterX;
         const dy = this.mouseY - this.shooterY;
-        this.shooterAngle = Math.atan2(dx, -dy);
+        let angle = Math.atan2(-dy, dx) - Math.PI/2;
+        
+        // Normalize angle to be between -PI/2 and PI/2
+        if (angle < -Math.PI) angle += 2*Math.PI;
+        if (angle > Math.PI) angle -= 2*Math.PI;
         
         // Clamp angle between -PI/3 (-60 degrees) and PI/3 (60 degrees)
-        this.shooterAngle = Math.max(-Math.PI/3, Math.min(Math.PI/3, this.shooterAngle));
+        this.shooterAngle = Math.max(-Math.PI/3, Math.min(Math.PI/3, angle));
     }
     
     handleClick(e) {
