@@ -2,90 +2,179 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>PokkaMan Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rahkin Games</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=One+Little+Font&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="pokka-pacman.css">
+    <style>
+        :root {
+            --pokka-orange: #FFA500;
+            --pokka-cyan: #40E0D0;
+            --pokka-dark: #000000;
+            --pokka-pink: #ff9ec5;
+            --pokka-white: #FFFFFF;
+            --pokka-shadow: rgba(0, 0, 0, 0.3);
+            --background-gradient: linear-gradient(135deg, var(--pokka-orange) 0%, var(--pokka-cyan) 100%);
+            --pokka-grid: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Press Start 2P', cursive;
+            background: var(--pokka-dark);
+            background-image: 
+                linear-gradient(45deg, var(--pokka-grid) 25%, transparent 25%),
+                linear-gradient(-45deg, var(--pokka-grid) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, var(--pokka-grid) 75%),
+                linear-gradient(-45deg, transparent 75%, var(--pokka-grid) 75%);
+            background-size: 20px 20px;
+            color: var(--pokka-white);
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 3rem;
+        }
+
+        .header img {
+            max-width: 100%;
+            height: auto;
+            max-height: 150px;
+            margin-bottom: 1rem;
+        }
+
+        .header h1 {
+            font-family: 'One Little Font', cursive;
+            font-size: 2.5em;
+            margin-bottom: 1rem;
+            background: var(--background-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 0.8em;
+            line-height: 1.6;
+            color: var(--pokka-white);
+            opacity: 0.9;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .game-card {
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid var(--pokka-cyan);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--pokka-white);
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .game-card h2 {
+            font-family: 'One Little Font', cursive;
+            font-size: 1.5em;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-card p {
+            font-size: 0.7em;
+            line-height: 1.4;
+            opacity: 0.8;
+        }
+
+        .coming-soon {
+            position: relative;
+            opacity: 0.7;
+        }
+
+        .coming-soon::after {
+            content: "Coming Soon";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--background-gradient);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-size: 0.8em;
+            color: var(--pokka-dark);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
+    <div class="container">
         <div class="header">
-            <img src="assets/images/pokka_header.png" alt="PokkaMan Header" class="header-image">
+            <img src="assets/images/pokka_header.png" alt="Rahkin Games Header" class="header-image">
+            <h1>Welcome to Rahkin Games</h1>
+            <p>Play exciting games and earn rewards!</p>
         </div>
 
-        <nav class="nav-links">
-            <button id="startBtn" class="nav-button">Start Game</button>
-            <button id="tutorialBtn" class="nav-button">How to Play</button>
-            <button id="leaderboardBtn" class="nav-button">Leaderboard</button>
-            <a href="https://pancakeswap.finance/swap?outputCurrency=0xb82f36fb31bF0Be873879C031DE4150d40AfDda9&inputCurrency=BNB" class="nav-button" target="_blank">Trade $pokka</a>
-            <a href="https://aiai.now" class="nav-button" target="_blank">AIAI Society</a>
-            <a href="https://x.com/Pokka_AIAI" class="nav-button" target="_blank">Pokka's X</a>
-        </nav>
+        <div class="games-grid">
+            <a href="pokka-man/" class="game-card">
+                <img src="assets/images/pokka_header.png" alt="PokkaMan Game">
+                <h2>PokkaMan</h2>
+                <p>Guide Pokka through the maze, collect dots, and avoid ghosts in this classic arcade-style game!</p>
+            </a>
 
-        <div class="score-container">
-            Score: <span id="score">0</span>
-        </div>
-
-        <div class="game-area">
-            <canvas id="gameCanvas" width="840" height="930" tabindex="0"></canvas>
-        </div>
-
-        <div class="mobile-controls">
-            <div class="controls-row">
-                <button id="upBtn">↑</button>
-            </div>
-            <div class="controls-row">
-                <button id="leftBtn">←</button>
-                <button id="downBtn">↓</button>
-                <button id="rightBtn">→</button>
+            <div class="game-card coming-soon">
+                <img src="assets/images/placeholder.jpg" alt="Coming Soon">
+                <h2>More Games Coming Soon</h2>
+                <p>Stay tuned for more exciting games and adventures!</p>
             </div>
         </div>
     </div>
-
-    <!-- Player Name Modal -->
-    <div id="playerNameModal" class="modal">
-        <div class="modal-content">
-            <h2>Enter Your Name</h2>
-            <input type="text" id="playerName" maxlength="15" placeholder="Your name...">
-            <button id="submitName" class="menu-button">Start</button>
-        </div>
-    </div>
-
-    <!-- Game Over Modal -->
-    <div id="gameOverModal" class="modal">
-        <div class="modal-content">
-            <h2>Game Over!</h2>
-            <p>Final Score: <span id="finalScore">0</span></p>
-            <button id="playAgain" class="menu-button">Play Again</button>
-            <button class="close-modal menu-button">Close</button>
-        </div>
-    </div>
-
-    <!-- Tutorial Modal -->
-    <div id="tutorialModal" class="modal">
-        <div class="modal-content">
-            <h2>How to Play</h2>
-            <p>Use arrow keys or on-screen controls to move Pokka.</p>
-            <p>Collect all dots while avoiding ghosts!</p>
-            <p>Power pellets make ghosts vulnerable.</p>
-            <button class="close-modal menu-button">Got it!</button>
-        </div>
-    </div>
-
-    <!-- Leaderboard Modal -->
-    <div id="leaderboardModal" class="modal">
-        <div class="modal-content">
-            <h2>High Scores</h2>
-            <div id="leaderboardList"></div>
-            <button class="close-modal menu-button">Close</button>
-        </div>
-    </div>
-
-    <script type="module" src="pokka-pacman.js"></script>
 </body>
 </html> 
