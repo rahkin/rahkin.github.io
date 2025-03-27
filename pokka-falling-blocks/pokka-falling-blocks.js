@@ -2,6 +2,7 @@
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 const BLOCK_SIZE = 25;  // Reduced block size for better fit
+const MAX_LEADERBOARD_ENTRIES = 5;
 const COLORS = [
     '#FF0D0D', // red
     '#0DFF1D', // green
@@ -43,6 +44,7 @@ class Game {
         this.level = 1;
         this.gameOver = false;
         this.paused = false;
+        this.started = false;
         
         // Current and next piece state
         this.currentPiece = null;
@@ -59,15 +61,59 @@ class Game {
         // Bind event handlers
         document.addEventListener('keydown', this.handleKeyPress.bind(this));
         
-        // Start game loop
+        // Initialize game loop
         this.dropInterval = 1000;
         this.lastDrop = Date.now();
         this.gameLoop();
         
-        // Spawn first pieces
-        this.nextPiece = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-        this.nextColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-        this.spawnPiece();
+        // Draw start screen
+        this.drawStartScreen();
+        
+        // Load leaderboard
+        this.leaderboard = this.loadLeaderboard();
+        this.updateLeaderboardDisplay();
+    }
+
+    start() {
+        if (!this.started) {
+            this.started = true;
+            this.gameOver = false;
+            this.score = 0;
+            this.level = 1;
+            document.getElementById('score').textContent = this.score;
+            document.getElementById('level').textContent = this.level;
+            
+            // Clear the board
+            this.board = Array(BOARD_HEIGHT).fill().map(() => Array(BOARD_WIDTH).fill(0));
+            
+            // Spawn first pieces
+            this.nextPiece = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+            this.nextColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+            this.spawnPiece();
+        }
+    }
+
+    drawStartScreen() {
+        // Clear canvas
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw title
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = '20px "One Little Font"';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText("POKKA'S", 
+            this.canvas.width / 2,
+            this.canvas.height / 3);
+        this.ctx.fillText('FALLING BLOCKS', 
+            this.canvas.width / 2,
+            this.canvas.height / 3 + 30);
+            
+        // Draw instruction
+        this.ctx.font = '16px "One Little Font"';
+        this.ctx.fillText('Click START to play!', 
+            this.canvas.width / 2,
+            this.canvas.height / 2 + 30);
     }
     
     spawnPiece() {
@@ -219,6 +265,11 @@ class Game {
             }
         }
         
+        // Check for game over after landing
+        if (this.gameOver) {
+            this.addToLeaderboard();
+        }
+        
         // Spawn new piece
         this.spawnPiece();
     }
@@ -275,6 +326,11 @@ class Game {
     }
     
     draw() {
+        if (!this.started) {
+            this.drawStartScreen();
+            return;
+        }
+
         // Clear canvas
         this.ctx.fillStyle = '#000000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -303,19 +359,26 @@ class Game {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.fillStyle = '#FFFFFF';
-            this.ctx.font = '40px "Press Start 2P"';
+            this.ctx.font = '20px "One Little Font"';
+            this.ctx.textAlign = 'center';
             this.ctx.fillText('GAME OVER', 
-                (this.canvas.width - this.ctx.measureText('GAME OVER').width) / 2,
+                this.canvas.width / 2,
                 this.canvas.height / 2);
+            this.ctx.font = '16px "One Little Font"';
+            this.ctx.fillText('Click START to play again!', 
+                this.canvas.width / 2,
+                this.canvas.height / 2 + 30);
+            this.started = false;
         }
         
         if (this.paused) {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             this.ctx.fillStyle = '#FFFFFF';
-            this.ctx.font = '40px "Press Start 2P"';
+            this.ctx.font = '20px "One Little Font"';
+            this.ctx.textAlign = 'center';
             this.ctx.fillText('PAUSED',
-                (this.canvas.width - this.ctx.measureText('PAUSED').width) / 2,
+                this.canvas.width / 2,
                 this.canvas.height / 2);
         }
     }
@@ -340,7 +403,7 @@ class Game {
     }
     
     gameLoop() {
-        if (!this.gameOver && !this.paused) {
+        if (this.started && !this.gameOver && !this.paused) {
             const now = Date.now();
             if (now - this.lastDrop > this.dropInterval) {
                 this.moveDown();
@@ -351,10 +414,60 @@ class Game {
         this.draw();
         requestAnimationFrame(() => this.gameLoop());
     }
+
+    loadLeaderboard() {
+        const saved = localStorage.getItem('fallingBlocksLeaderboard');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    saveLeaderboard() {
+        localStorage.setItem('fallingBlocksLeaderboard', JSON.stringify(this.leaderboard));
+    }
+
+    updateLeaderboardDisplay() {
+        const leaderboardElement = document.getElementById('leaderboard');
+        leaderboardElement.innerHTML = '<h3>High Scores</h3>';
+        
+        if (this.leaderboard.length === 0) {
+            leaderboardElement.innerHTML += '<p>No scores yet!</p>';
+            return;
+        }
+
+        const list = document.createElement('ol');
+        this.leaderboard
+            .sort((a, b) => b.score - a.score)
+            .slice(0, MAX_LEADERBOARD_ENTRIES)
+            .forEach(entry => {
+                const item = document.createElement('li');
+                item.textContent = `${entry.score} - Level ${entry.level}`;
+                list.appendChild(item);
+            });
+        leaderboardElement.appendChild(list);
+    }
+
+    addToLeaderboard() {
+        this.leaderboard.push({
+            score: this.score,
+            level: this.level,
+            date: new Date().toISOString()
+        });
+        
+        // Sort and keep only top scores
+        this.leaderboard.sort((a, b) => b.score - a.score);
+        this.leaderboard = this.leaderboard.slice(0, MAX_LEADERBOARD_ENTRIES);
+        
+        this.saveLeaderboard();
+        this.updateLeaderboardDisplay();
+    }
 }
 
 // Initialize game when page loads
 window.addEventListener('load', () => {
     const canvas = document.getElementById('gameCanvas');
-    new Game(canvas);
+    window.game = new Game(canvas);
+    
+    // Add start button listener
+    document.getElementById('startButton').addEventListener('click', () => {
+        window.game.start();
+    });
 }); 

@@ -64,7 +64,7 @@
             box-shadow: 0 0 10px var(--pokka-cyan);
         }
 
-        .game-area {
+        .game-container {
             display: flex;
             gap: 20px;
             align-items: flex-start;
@@ -125,13 +125,55 @@
             margin: 0 5px;
         }
 
+        button {
+            background-color: #0DFFF3;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'One Little Font', sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0DFFB3;
+            transform: scale(1.05);
+        }
+
+        #leaderboard {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid #0DFFF3;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #0DFFF3;
+            background-color: rgba(13, 255, 243, 0.1);
+            min-width: 200px;
+        }
+
+        #leaderboard h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        #leaderboard ol {
+            margin: 0;
+            padding-left: 25px;
+        }
+
+        #leaderboard li {
+            margin: 5px 0;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 10px;
                 font-size: 16px;
             }
 
-            .game-area {
+            .game-container {
                 flex-direction: column;
                 align-items: center;
             }
@@ -171,7 +213,7 @@
         <a href="https://x.com/Pokka_AIAI" target="_blank">Pokka's X</a>
     </nav>
 
-    <div class="game-area">
+    <div class="game-container">
         <div id="gameContainer">
             <canvas id="gameCanvas"></canvas>
         </div>
@@ -185,6 +227,12 @@
             <div class="next-piece">
                 <h3>Next Piece</h3>
                 <canvas id="nextCanvas" width="120" height="120"></canvas>
+            </div>
+            <button id="startButton">Start Game</button>
+            
+            <div id="leaderboard">
+                <h3>High Scores</h3>
+                <p>No scores yet!</p>
             </div>
         </div>
     </div>
