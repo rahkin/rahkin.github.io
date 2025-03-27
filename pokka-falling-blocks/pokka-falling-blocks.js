@@ -205,7 +205,9 @@ class Game {
             window.soundManager.play('gameover');
             // Save score immediately when game is over
             if (this.score > 0) {
-                this.saveScore();
+                this.saveScore().then(() => {
+                    this.loadLeaderboard(); // Refresh leaderboard after saving
+                });
             }
         }
     }
@@ -341,7 +343,9 @@ class Game {
         // Check for game over after landing
         if (this.gameOver) {
             if (this.score > 0) {
-                this.saveScore();
+                this.saveScore().then(() => {
+                    this.loadLeaderboard(); // Refresh leaderboard after saving
+                });
             }
         }
         
@@ -495,12 +499,7 @@ class Game {
     async loadLeaderboard() {
         try {
             console.log('Loading leaderboard...');
-            const response = await fetch('https://scores.pokka.ai/scores?game=falling-blocks', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            const response = await fetch('https://api.pokka.ai/scores?game=falling-blocks');
             
             if (response.ok) {
                 const data = await response.json();
@@ -525,10 +524,10 @@ class Game {
 
             console.log('Saving score:', scoreData);
 
-            const response = await fetch('https://scores.pokka.ai/scores', {
+            const response = await fetch('https://api.pokka.ai/scores', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(scoreData)
             });
@@ -556,13 +555,13 @@ class Game {
         }
 
         const list = document.createElement('ol');
-        [...this.leaderboard] // Create a copy to avoid modifying the original
-            .sort((a, b) => b.score - a.score)
+        [...this.leaderboard]
+            .sort((a, b) => Number(b.score) - Number(a.score))
             .slice(0, MAX_LEADERBOARD_ENTRIES)
-            .forEach((entry, index) => {
+            .forEach((entry) => {
                 const item = document.createElement('li');
                 const name = entry.name || 'Anonymous';
-                const score = parseInt(entry.score).toLocaleString();
+                const score = Number(entry.score).toLocaleString();
                 item.textContent = `${name} - ${score}`;
                 if (entry.name === this.playerName) {
                     item.style.color = 'var(--pokka-cyan)';
