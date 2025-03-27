@@ -15,7 +15,7 @@ const GRID_ROWS = 8;
 const GRID_COLS = 8;
 const SHOOT_SPEED = 10;
 const MAX_ANGLE = Math.PI;
-const COLLISION_THRESHOLD = BUBBLE_RADIUS * 1.1; // Reduced for tighter collisions
+const COLLISION_THRESHOLD = BUBBLE_RADIUS * 2.1; // Distance for bubble collision
 
 class Game {
     constructor(canvas) {
@@ -121,7 +121,7 @@ class Game {
         // Calculate angle between shooter and mouse position
         const dx = this.mouseX - this.shooterX;
         const dy = this.mouseY - this.shooterY;
-        let angle = -Math.atan2(dy, dx) + Math.PI/2;
+        let angle = Math.PI/2 - Math.atan2(-dy, dx);
         
         // Clamp angle between -PI/3 (-60 degrees) and PI/3 (60 degrees)
         this.shooterAngle = Math.max(-Math.PI/3, Math.min(Math.PI/3, angle));
@@ -173,12 +173,13 @@ class Game {
         if (!this.started || this.gameOver || this.paused) return;
         
         console.log('Shooting bubble at angle:', this.shooterAngle);
+        const angle = Math.PI/2 - this.shooterAngle; // Convert to standard angle
         this.activeBubble = {
             x: this.shooterX,
             y: this.shooterY,
             color: this.currentBubble.color,
-            dx: Math.sin(this.shooterAngle) * SHOOT_SPEED,  // Use sin for x
-            dy: -Math.cos(this.shooterAngle) * SHOOT_SPEED  // Use -cos for y
+            dx: Math.cos(angle) * SHOOT_SPEED,
+            dy: -Math.sin(angle) * SHOOT_SPEED
         };
         
         // Update current and next bubbles
@@ -207,29 +208,15 @@ class Game {
             }
             
             // Check collisions with other bubbles
-            let collision = false;
-            let minDistance = Infinity;
-            let closestBubble = null;
-            
             for (const bubble of this.bubbles) {
                 const dx = this.activeBubble.x - bubble.x;
                 const dy = this.activeBubble.y - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestBubble = bubble;
+                if (distance <= COLLISION_THRESHOLD) {
+                    this.snapBubbleToGrid();
+                    return;
                 }
-                
-                if (distance <= BUBBLE_RADIUS * 2.1) { // Slightly larger than 2 radii for better contact
-                    collision = true;
-                    break;
-                }
-            }
-            
-            if (collision && closestBubble) {
-                this.snapBubbleToGrid();
-                return;
             }
         }
         
@@ -538,9 +525,10 @@ class Game {
         // Draw aiming line
         this.ctx.beginPath();
         this.ctx.moveTo(this.shooterX, this.shooterY);
+        const angle = Math.PI/2 - this.shooterAngle; // Convert to standard angle
         this.ctx.lineTo(
-            this.shooterX + Math.sin(this.shooterAngle) * SHOOTER_HEIGHT,
-            this.shooterY - Math.cos(this.shooterAngle) * SHOOTER_HEIGHT
+            this.shooterX + Math.cos(angle) * SHOOTER_HEIGHT,
+            this.shooterY - Math.sin(angle) * SHOOTER_HEIGHT
         );
         this.ctx.strokeStyle = '#FFFFFF';
         this.ctx.lineWidth = 2;
