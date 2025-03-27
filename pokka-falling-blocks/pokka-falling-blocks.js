@@ -373,6 +373,28 @@ class Game {
         return true;
     }
     
+    handleDirection(direction) {
+        if (this.gameOver || this.paused || !this.currentPiece) return;
+
+        switch (direction) {
+            case 'left':
+                this.moveLeft();
+                break;
+            case 'right':
+                this.moveRight();
+                break;
+            case 'down':
+                this.moveDown();
+                break;
+            case 'rotate':
+                this.rotate();
+                break;
+            case 'drop':
+                while (this.moveDown());
+                break;
+        }
+    }
+
     handleKeyPress(event) {
         if (this.gameOver || this.paused) return;
         
@@ -570,6 +592,59 @@ class Game {
                 list.appendChild(item);
             });
         leaderboardElement.appendChild(list);
+    }
+
+    setupTouchControls() {
+        console.log('Setting up mobile controls...');
+        
+        const buttons = {
+            left: document.querySelector('.control-left'),
+            right: document.querySelector('.control-right'),
+            down: document.querySelector('.control-down'),
+            rotate: document.querySelector('.control-rotate'),
+            drop: document.querySelector('.control-drop')
+        };
+        
+        console.log('Buttons found:', buttons);
+        
+        // Check if all buttons exist
+        if (!Object.values(buttons).every(button => button)) {
+            console.warn('Some mobile control buttons were not found');
+            return;
+        }
+        
+        // Add touch event listeners
+        Object.entries(buttons).forEach(([direction, button]) => {
+            button.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (direction === 'drop') {
+                    while (this.moveDown());
+                } else {
+                    this.handleDirection(direction);
+                }
+            });
+            
+            // For continuous movement while holding
+            if (direction === 'left' || direction === 'right' || direction === 'down') {
+                let intervalId = null;
+                
+                button.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    intervalId = setInterval(() => {
+                        this.handleDirection(direction);
+                    }, 100);
+                });
+                
+                button.addEventListener('touchend', () => {
+                    if (intervalId) {
+                        clearInterval(intervalId);
+                        intervalId = null;
+                    }
+                });
+            }
+        });
+        
+        console.log('Mobile controls setup complete');
     }
 }
 
