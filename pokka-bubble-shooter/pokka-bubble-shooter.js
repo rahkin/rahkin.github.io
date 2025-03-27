@@ -121,8 +121,8 @@ class Game {
         const dy = this.mouseY - this.shooterY;
         this.shooterAngle = Math.atan2(dy, dx);
         
-        // Clamp angle between -PI/3 (-60 degrees) and PI/3 (60 degrees)
-        this.shooterAngle = Math.max(-Math.PI/3, Math.min(Math.PI/3, this.shooterAngle));
+        // Clamp angle between PI/2 (90 degrees) and 4PI/3 (240 degrees)
+        this.shooterAngle = Math.max(Math.PI/2, Math.min(4*Math.PI/3, this.shooterAngle));
     }
     
     handleClick(e) {
@@ -149,11 +149,11 @@ class Game {
         switch (e.code) {
             case 'ArrowLeft':
                 e.preventDefault();
-                this.shooterAngle = Math.max(this.shooterAngle - 0.1, -Math.PI/3);
+                this.shooterAngle = Math.min(this.shooterAngle + 0.1, 4*Math.PI/3);
                 break;
             case 'ArrowRight':
                 e.preventDefault();
-                this.shooterAngle = Math.min(this.shooterAngle + 0.1, Math.PI/3);
+                this.shooterAngle = Math.max(this.shooterAngle - 0.1, Math.PI/2);
                 break;
             case 'Space':
                 e.preventDefault();
