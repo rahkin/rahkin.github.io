@@ -70,7 +70,8 @@ class Game {
         this.drawStartScreen();
         
         // Load leaderboard but keep it hidden initially
-        this.leaderboard = this.loadLeaderboard();
+        this.leaderboard = [];
+        this.loadLeaderboard(); // Now async
         this.updateLeaderboardDisplay();
         document.getElementById('leaderboard').classList.add('hidden');
         
@@ -97,8 +98,8 @@ class Game {
         nameInput.classList.add('visible');
         overlay.classList.add('visible');
         
-        // Focus the input
-        input.value = localStorage.getItem('lastPlayerName') || '';
+        // Clear and focus the input
+        input.value = '';
         input.focus();
         
         // Handle submit
@@ -133,7 +134,6 @@ class Game {
 
     startGame(playerName) {
         this.playerName = playerName;
-        localStorage.setItem('lastPlayerName', playerName);
         
         this.started = true;
         this.gameOver = false;
@@ -484,20 +484,48 @@ class Game {
         requestAnimationFrame(() => this.gameLoop());
     }
 
-    loadLeaderboard() {
-        const saved = localStorage.getItem('fallingBlocksLeaderboard');
-        return saved ? JSON.parse(saved) : [];
+    async loadLeaderboard() {
+        try {
+            const response = await fetch('https://api.pokka.ai/leaderboard/falling-blocks');
+            if (response.ok) {
+                const data = await response.json();
+                this.leaderboard = data.scores || [];
+                this.updateLeaderboardDisplay();
+            }
+        } catch (error) {
+            console.error('Failed to load leaderboard:', error);
+        }
     }
 
-    saveLeaderboard() {
-        localStorage.setItem('fallingBlocksLeaderboard', JSON.stringify(this.leaderboard));
+    async saveScore(score) {
+        try {
+            const response = await fetch('https://api.pokka.ai/leaderboard/falling-blocks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    playerName: this.playerName,
+                    score: this.score,
+                    level: this.level,
+                    date: new Date().toISOString()
+                })
+            });
+            
+            if (response.ok) {
+                // Refresh leaderboard after saving
+                await this.loadLeaderboard();
+            }
+        } catch (error) {
+            console.error('Failed to save score:', error);
+        }
     }
 
     updateLeaderboardDisplay() {
         const leaderboardElement = document.getElementById('leaderboard');
         leaderboardElement.innerHTML = '<h3>Leaderboard</h3>';
         
-        if (this.leaderboard.length === 0) {
+        if (!this.leaderboard || this.leaderboard.length === 0) {
             leaderboardElement.innerHTML += '<p>No scores yet!</p>';
             return;
         }
@@ -520,19 +548,8 @@ class Game {
     }
 
     addToLeaderboard() {
-        this.leaderboard.push({
-            playerName: this.playerName,
-            score: this.score,
-            level: this.level,
-            date: new Date().toISOString()
-        });
-        
-        // Sort and keep only top scores
-        this.leaderboard.sort((a, b) => b.score - a.score);
-        this.leaderboard = this.leaderboard.slice(0, MAX_LEADERBOARD_ENTRIES);
-        
-        this.saveLeaderboard();
-        this.updateLeaderboardDisplay();
+        // Save score to global leaderboard
+        this.saveScore();
     }
 }
 
