@@ -201,9 +201,9 @@ class Game {
             
             // Check ceiling collision first
             if (this.activeBubble.y <= BUBBLE_RADIUS) {
-                // Move back to valid position
+                // Move back to valid position at ceiling
                 this.activeBubble.y = BUBBLE_RADIUS;
-                this.snapBubbleToGrid();
+                this.snapBubbleToGrid(true); // true indicates ceiling collision
                 return;
             }
             
@@ -259,7 +259,7 @@ class Game {
                 this.activeBubble.x = touchX;
                 this.activeBubble.y = touchY;
                 
-                this.snapBubbleToGrid();
+                this.snapBubbleToGrid(false); // false indicates bubble collision
                 return;
             }
         }
@@ -271,7 +271,31 @@ class Game {
         }
     }
     
-    snapBubbleToGrid() {
+    snapBubbleToGrid(isCeilingCollision = false) {
+        // If it's a ceiling collision, snap to the nearest column in the top row
+        if (isCeilingCollision) {
+            const nearestCol = Math.round(this.activeBubble.x / BUBBLE_SPACING);
+            const x = nearestCol * BUBBLE_SPACING + BUBBLE_RADIUS;
+            const y = BUBBLE_RADIUS; // Top row
+            
+            // Add bubble to grid
+            this.bubbles.push({
+                x,
+                y,
+                color: this.activeBubble.color,
+                row: 0,
+                col: nearestCol
+            });
+            
+            // Check for matches
+            this.checkMatches();
+            
+            // Clear active bubble
+            this.activeBubble = null;
+            return;
+        }
+        
+        // Regular collision snapping logic
         // Ensure bubble is within bounds before snapping
         this.activeBubble.x = Math.max(BUBBLE_RADIUS, 
             Math.min(CANVAS_WIDTH - BUBBLE_RADIUS, this.activeBubble.x));
@@ -285,11 +309,6 @@ class Game {
         // Ensure the bubble doesn't go outside the grid
         nearestRow = Math.max(0, Math.min(nearestRow, GRID_ROWS - 1));
         nearestCol = Math.max(0, Math.min(nearestCol, GRID_COLS - 1));
-        
-        // If bubble is in top half of screen, force it to attach to top row if no collision
-        if (this.activeBubble.y < CANVAS_HEIGHT / 2 && this.bubbles.length === 0) {
-            nearestRow = 0;
-        }
         
         // Check if position is already occupied
         const isOccupied = this.bubbles.some(bubble => 
@@ -334,10 +353,10 @@ class Game {
                 }
             }
             
-            // If no free position found, force to top row
+            // If no free position found, force to nearest edge
             if (!found) {
-                nearestRow = 0;
-                nearestCol = Math.floor(GRID_COLS / 2);
+                nearestRow = Math.min(nearestRow, 1); // Keep in top two rows
+                nearestCol = Math.min(Math.max(0, nearestCol), GRID_COLS - 1);
             }
         }
         
