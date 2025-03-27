@@ -110,19 +110,23 @@ class Game {
     
     handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
-        this.mouseX = e.clientX - rect.left;
-        this.mouseY = e.clientY - rect.top;
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        
+        this.mouseX = (e.clientX - rect.left) * scaleX;
+        this.mouseY = (e.clientY - rect.top) * scaleY;
         
         // Calculate angle between shooter and mouse position
         const dx = this.mouseX - this.shooterX;
         const dy = this.mouseY - this.shooterY;
         this.shooterAngle = Math.atan2(-dy, dx) + Math.PI / 2;
         
-        // Clamp angle
+        // Clamp angle between 0 and PI
         this.shooterAngle = Math.max(0, Math.min(Math.PI, this.shooterAngle));
     }
     
     handleClick(e) {
+        e.preventDefault();
         console.log('Click handled, game state:', {
             started: this.started,
             gameOver: this.gameOver,
@@ -164,6 +168,9 @@ class Game {
     }
     
     shootBubble() {
+        if (!this.started || this.gameOver || this.paused) return;
+        
+        console.log('Shooting bubble at angle:', this.shooterAngle);
         this.activeBubble = {
             x: this.shooterX,
             y: this.shooterY,
