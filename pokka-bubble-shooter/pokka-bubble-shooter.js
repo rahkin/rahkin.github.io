@@ -191,45 +191,41 @@ class Game {
         if (this.gameOver || this.paused || !this.started) return;
         
         if (this.activeBubble) {
-            // Store previous position
-            const prevX = this.activeBubble.x;
-            const prevY = this.activeBubble.y;
-            
             // Update bubble position
-            this.activeBubble.x += this.activeBubble.dx;
-            this.activeBubble.y += this.activeBubble.dy;
+            const newX = this.activeBubble.x + this.activeBubble.dx;
+            const newY = this.activeBubble.y + this.activeBubble.dy;
             
             // Check ceiling collision first
-            if (this.activeBubble.y <= BUBBLE_RADIUS) {
-                // Move back to valid position at ceiling
+            if (newY <= BUBBLE_RADIUS) {
                 this.activeBubble.y = BUBBLE_RADIUS;
                 this.snapBubbleToGrid(true); // true indicates ceiling collision
                 return;
             }
             
             // Check wall collisions
-            if (this.activeBubble.x <= BUBBLE_RADIUS || 
-                this.activeBubble.x >= CANVAS_WIDTH - BUBBLE_RADIUS) {
+            if (newX <= BUBBLE_RADIUS || newX >= CANVAS_WIDTH - BUBBLE_RADIUS) {
                 this.activeBubble.dx *= -1;
                 // Adjust position to prevent sticking to wall
                 this.activeBubble.x = Math.max(BUBBLE_RADIUS, 
-                    Math.min(CANVAS_WIDTH - BUBBLE_RADIUS, this.activeBubble.x));
+                    Math.min(CANVAS_WIDTH - BUBBLE_RADIUS, newX));
+                this.activeBubble.y = newY;
+                return;
             }
             
             // Check if bubble went too far down
-            if (this.activeBubble.y > CANVAS_HEIGHT) {
+            if (newY > CANVAS_HEIGHT) {
                 this.activeBubble = null;
                 return;
             }
             
             // Check collisions with other bubbles
             let collision = false;
-            let minDistance = Infinity;
             let closestBubble = null;
+            let minDistance = Infinity;
             
             for (const bubble of this.bubbles) {
-                const dx = this.activeBubble.x - bubble.x;
-                const dy = this.activeBubble.y - bubble.y;
+                const dx = newX - bubble.x;
+                const dy = newY - bubble.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance < minDistance) {
@@ -244,24 +240,22 @@ class Game {
             }
             
             if (collision && closestBubble) {
-                // Move back to previous position
-                this.activeBubble.x = prevX;
-                this.activeBubble.y = prevY;
-                
                 // Calculate exact touching position
-                const dx = this.activeBubble.x - closestBubble.x;
-                const dy = this.activeBubble.y - closestBubble.y;
+                const dx = newX - closestBubble.x;
+                const dy = newY - closestBubble.y;
                 const angle = Math.atan2(dy, dx);
-                const touchX = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
-                const touchY = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
                 
-                // Set position to exact touching point
-                this.activeBubble.x = touchX;
-                this.activeBubble.y = touchY;
+                // Place bubble at exact touching position
+                this.activeBubble.x = closestBubble.x + Math.cos(angle) * COLLISION_THRESHOLD;
+                this.activeBubble.y = closestBubble.y + Math.sin(angle) * COLLISION_THRESHOLD;
                 
-                this.snapBubbleToGrid(false); // false indicates bubble collision
+                this.snapBubbleToGrid(false);
                 return;
             }
+            
+            // No collision, update position
+            this.activeBubble.x = newX;
+            this.activeBubble.y = newY;
         }
         
         // Check for game over (bubbles too low)
