@@ -20,16 +20,20 @@ export class Snake {
             envMapIntensity: 1
         });
         this.head = new THREE.Mesh(headGeometry, headMaterial);
-        this.head.position.copy(position);
         this.head.castShadow = true;
         this.head.receiveShadow = true;
         
         // Add head glow effect
         this.headGlow = new THREE.PointLight(0x00ff00, 1, 3);
+        
+        // Create snake group and set its position
+        this.group = new THREE.Group();
+        this.group.position.copy(position);
+        
+        // Position head relative to group (at local origin)
+        this.head.position.set(0, 0, 0);
         this.headGlow.position.copy(this.head.position);
         
-        // Create snake group
-        this.group = new THREE.Group();
         this.group.add(this.head);
         this.group.add(this.headGlow);
         
@@ -80,12 +84,24 @@ export class Snake {
             previousPositions.push(segment.position.clone());
         });
         
-        // Move head
+        // Move head in local space
         const moveAmount = this.speed * deltaTime;
         this.head.position.add(this.direction.clone().multiplyScalar(moveAmount));
         
         // Update head glow position
         this.headGlow.position.copy(this.head.position);
+        
+        // Check world boundaries in world space
+        const worldPos = new THREE.Vector3();
+        this.head.getWorldPosition(worldPos);
+        const worldSize = 45;
+        
+        if (Math.abs(worldPos.x) > worldSize || Math.abs(worldPos.z) > worldSize) {
+            if (this.game.gameManager) {
+                this.game.gameManager.gameOver();
+            }
+            return;
+        }
         
         // Update segments with proper spacing and color gradient
         this.segments.forEach((segment, index) => {
@@ -170,9 +186,7 @@ export class Snake {
     }
 
     reset() {
-        // Reset position
-        this.group.position.set(0, 0.5, 0);
-        this.head.position.set(0, 0, 0);
+        // Reset direction and properties
         this.direction.set(0, 0, -1);
         this.nextDirection.copy(this.direction);
         this.speed = 8;
@@ -186,6 +200,12 @@ export class Snake {
         });
         this.segments = [];
     
+        // Reset positions
+        const startPosition = new THREE.Vector3(0, 0.5, 0);
+        this.group.position.set(0, 0.5, 0);
+        this.head.position.set(0, 0, 0);
+        this.headGlow.position.copy(this.head.position);
+        
         // Add new initial segment
         this.addSegment();
     }

@@ -67,18 +67,31 @@ export class GameManager {
     }
 
     start() {
+        console.log('GameManager: Starting game');
+        
         // Clean up any existing game state
         this.cleanup();
         
         // Initialize fresh game state
         this.isRunning = true;
+        this.canCheckCollisions = false;
+        this.lastSpawnTime = Date.now();
+        this.settings.spawnInterval = 1000;
+        
+        // Initialize systems
         this.obstacleSystem.initialize();
         this.spawnInitialPellets();
         
         // Delay collision checks to prevent immediate game over
         setTimeout(() => {
             this.canCheckCollisions = true;
-        }, 2000); // Changed from 1000
+            console.log('GameManager: Collision checks enabled');
+        }, 2000);
+        
+        console.log('GameManager: Game started:', {
+            isRunning: this.isRunning,
+            pelletCount: this.pellets.size
+        });
     }
 
     spawnInitialPellets() {
@@ -95,12 +108,16 @@ export class GameManager {
     }
 
     update(deltaTime) {
-        if (!this.isRunning) return;
+        if (!this.isRunning || !this.game || this.game.isGameOver) {
+            return;
+        }
 
         // Update game state
         if (this.game.snake) {
-            // Handle collisions
-            this.checkCollisions();
+            // Handle collisions if enabled
+            if (this.canCheckCollisions) {
+                this.checkCollisions();
+            }
             
             // Spawn new items
             this.handleSpawning();
@@ -212,13 +229,16 @@ export class GameManager {
     }
 
     gameOver() {
+        console.log('GameManager: Game over');
         this.isRunning = false;
-        this.showGameOverScreen();
-        this.game.audio?.playSound('gameover');
+        if (this.game) {
+            this.game.gameOver();
+        }
     }
 
     showGameOverScreen() {
         const gameOverElement = document.createElement('div');
+        gameOverElement.className = 'game-over';
         gameOverElement.style.cssText = `
             position: fixed;
             top: 50%;
@@ -230,39 +250,47 @@ export class GameManager {
             color: white;
             font-family: Arial, sans-serif;
             text-align: center;
+            z-index: 1000;
         `;
         
         gameOverElement.innerHTML = `
             <h1>Game Over</h1>
             <p>Score: ${this.game.hud.score}</p>
             <p>High Score: ${this.game.hud.highScore}</p>
-            <button onclick="window.location.reload()">Play Again</button>
+            <button onclick="this.game.gameManager.restart()">Play Again</button>
         `;
         
         document.body.appendChild(gameOverElement);
     }
 
     restart() {
-        this.canCheckCollisions = false;
-        // Remove game over screen if exists
-        const gameOverScreen = document.querySelector('.game-over');
-        if (gameOverScreen) gameOverScreen.remove();
-
+        console.log('GameManager: Restarting game');
+        
         // Reset game state
         this.isRunning = true;
-        this.game.snake.reset();
+        this.canCheckCollisions = false;
+        this.lastSpawnTime = Date.now();
         
-        // Clear pellets and power-ups
-        this.pellets.forEach(pellet => pellet.collect());
-        this.powerUps.forEach(powerUp => powerUp.collect());
-        this.pellets.clear();
-        this.powerUps.clear();
+        // Reset settings
+        this.settings.spawnInterval = 1000;
         
-        // Reset obstacle system
-        this.obstacleSystem.reset();
+        // Clean up existing game objects
+        this.cleanup();
         
-        // Spawn new pellets
+        // Initialize fresh game state
+        this.obstacleSystem.initialize();
         this.spawnInitialPellets();
+        
+        // Delay collision checks to prevent immediate game over
+        setTimeout(() => {
+            this.canCheckCollisions = true;
+            console.log('GameManager: Collision checks enabled');
+        }, 2000);
+        
+        console.log('GameManager: Game restarted:', {
+            isRunning: this.isRunning,
+            pelletCount: this.pellets.size
+        });
     }
 
     togglePause() {
@@ -270,13 +298,28 @@ export class GameManager {
     }
 
     cleanup() {
-        this.obstacleSystem.cleanup();
+        console.log('GameManager: Cleaning up game objects');
         
-        this.pellets.forEach(pellet => pellet.collect());
-        this.powerUps.forEach(powerUp => powerUp.collect());
-        
+        // Clean up pellets
+        this.pellets.forEach(pellet => {
+            if (pellet && pellet.collect) {
+                pellet.collect();
+            }
+        });
         this.pellets.clear();
+        
+        // Clean up power-ups
+        this.powerUps.forEach(powerUp => {
+            if (powerUp && powerUp.collect) {
+                powerUp.collect();
+            }
+        });
         this.powerUps.clear();
+        
+        // Clean up obstacles
+        if (this.obstacleSystem) {
+            this.obstacleSystem.cleanup();
+        }
     }
 
     addDecorations() {
