@@ -69,16 +69,18 @@ export class GameManager {
     start() {
         console.log('GameManager: Starting game');
         
-        // Clean up any existing game state
-        this.cleanup();
-        
-        // Initialize fresh game state
+        // Reset game state
         this.isRunning = true;
         this.canCheckCollisions = false;
         this.lastSpawnTime = Date.now();
+        
+        // Reset settings
         this.settings.spawnInterval = 1000;
         
-        // Initialize systems
+        // Clean up existing game objects
+        this.cleanup();
+        
+        // Initialize fresh game state
         this.obstacleSystem.initialize();
         this.spawnInitialPellets();
         
@@ -86,7 +88,7 @@ export class GameManager {
         setTimeout(() => {
             this.canCheckCollisions = true;
             console.log('GameManager: Collision checks enabled');
-        }, 2000);
+        }, 3000); // Increased delay to 3 seconds
         
         console.log('GameManager: Game started:', {
             isRunning: this.isRunning,
@@ -98,9 +100,9 @@ export class GameManager {
         // Spawn initial pellets
         for (let i = 0; i < this.settings.maxPellets; i++) {
             const position = new THREE.Vector3(
-                (Math.random() - 0.5) * 90,
-                0.3,
-                (Math.random() - 0.5) * 90
+                (Math.random() - 0.5) * 80, // Reduced from 90 to keep pellets more visible
+                0.5, // Raised slightly to be more visible
+                (Math.random() - 0.5) * 80
             );
             const pellet = new Pellet(this.game, position);
             this.pellets.add(pellet);
@@ -156,63 +158,97 @@ export class GameManager {
     }
 
     checkCollisions() {
-        if (!this.game.snake || !this.canCheckCollisions) return;
-
-        // Check pellet collisions
-        this.pellets.forEach(pellet => {
-            if (this.game.snake.checkCollision(pellet.mesh)) {
-                this.collectPellet(pellet);
-            }
-        });
-
-        // Check power-up collisions
-        this.powerUps.forEach(powerUp => {
-            if (this.game.snake.checkCollision(powerUp.mesh)) {
-                this.collectPowerUp(powerUp);
-            }
-        });
-
-        // Check obstacle collisions
-        if (this.obstacleSystem.checkCollisions(this.game.snake)) {
-            this.gameOver();
+        if (!this.game.snake || !this.canCheckCollisions || this.game.isGameOver) {
+            console.log('GameManager: Skipping collision check', {
+                hasSnake: !!this.game.snake,
+                canCheckCollisions: this.canCheckCollisions,
+                isGameOver: this.game.isGameOver
+            });
+            return;
         }
 
-        // Check self collision (only if snake has enough segments and is not in ghost mode)
-        if (this.game.snake.segments.length > 4 && !this.game.snake.isGhost && this.game.snake.checkCollision()) {
-            this.gameOver();
+        // First check for pellet collisions
+        for (const pellet of this.pellets) {
+            if (!pellet.mesh) continue;
+            const distance = this.game.snake.head.position.distanceTo(pellet.mesh.position);
+            if (distance < 2.0) { // Increased collision distance for pellets
+                console.log('GameManager: Pellet collision detected', { distance });
+                this.collectPellet(pellet);
+                return; // Exit after collecting pellet to prevent other collision checks
+            }
+        }
+
+        // Then check for power-up collisions
+        for (const powerUp of this.powerUps) {
+            if (!powerUp.mesh) continue;
+            const distance = this.game.snake.head.position.distanceTo(powerUp.mesh.position);
+            if (distance < 2.0) { // Increased collision distance for power-ups
+                console.log('GameManager: Power-up collision detected', { distance });
+                this.collectPowerUp(powerUp);
+                return; // Exit after collecting power-up to prevent other collision checks
+            }
+        }
+
+        // Only check for game-ending collisions if not in ghost mode or invincible
+        if (!this.game.snake.isGhost && !this.game.snake.isInvincible) {
+            // Check wall and self collisions first
+            if (this.game.snake.checkCollisions()) {
+                console.log('GameManager: Wall or self collision detected');
+                this.gameOver();
+                return;
+            }
+
+            // Then check obstacle collisions
+            if (this.obstacleSystem.checkCollisions(this.game.snake)) {
+                console.log('GameManager: Obstacle collision detected');
+                this.gameOver();
+                return;
+            }
         }
     }
 
     collectPellet(pellet) {
-        const points = pellet.value || 10;
+        if (!pellet || !this.game.snake || this.game.isGameOver) {
+            console.log('GameManager: Cannot collect pellet - invalid state');
+            return;
+        }
+
+        console.log('GameManager: Collecting pellet');
+        
+        // Calculate points based on snake's point multiplier
+        const points = (pellet.value || 10) * (this.game.snake.pointMultiplier || 1);
+        
+        // Update score first
         if (this.game.hud) {
             this.game.hud.updateScore(points);
         }
         
-        // Make the snake grow
-        if (this.game.snake) {
-            this.game.snake.grow();
-            console.log('Growing snake, current segments:', this.game.snake.segments.length);
-        }
-        
+        // Remove the old pellet before growing the snake
         this.pellets.delete(pellet);
         pellet.collect();
         
+        // Make the snake grow
+        this.game.snake.grow();
+        
         // Spawn a new pellet to replace the collected one
         const position = new THREE.Vector3(
-            (Math.random() - 0.5) * 90,
-            0.3,
-            (Math.random() - 0.5) * 90
+            (Math.random() - 0.5) * 80,
+            0.5,
+            (Math.random() - 0.5) * 80
         );
         const newPellet = new Pellet(this.game, position);
         this.pellets.add(newPellet);
         
         // Play sound effect if available
-        this.game.audio?.playSound('collect');
+        if (this.game.audio?.playSound) {
+            this.game.audio.playSound('collect');
+        }
     }
 
     collectPowerUp(powerUp) {
-        powerUp.applyEffect(this.game.snake);
+        if (this.game.powerUpSystem) {
+            this.game.powerUpSystem.activatePowerUp(powerUp.type, this.game.snake);
+        }
         this.powerUps.delete(powerUp);
         powerUp.collect();
         
@@ -229,9 +265,10 @@ export class GameManager {
     }
 
     gameOver() {
-        console.log('GameManager: Game over');
+        console.log('GameManager: Game over triggered');
         this.isRunning = false;
-        if (this.game) {
+        this.canCheckCollisions = false; // Disable collision checks
+        if (this.game && !this.game.isGameOver) {
             this.game.gameOver();
         }
     }

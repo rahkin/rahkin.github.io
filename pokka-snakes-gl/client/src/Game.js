@@ -91,7 +91,8 @@ export class Game {
             0.1,
             1000
         );
-        this.camera.position.set(0, 30, 40);
+        // Position camera closer and at a better angle
+        this.camera.position.set(0, 15, 20);
         this.cameraController = new AdvancedCameraController(this);
     }
 
@@ -193,6 +194,9 @@ export class Game {
         // Set up camera to follow snake
         if (this.cameraController) {
             this.cameraController.setTarget(this.snake.head);
+            // Set better follow distance and height
+            this.cameraController.followDistance = 15;
+            this.cameraController.heightOffset = 10;
         }
     }
 
@@ -247,8 +251,10 @@ export class Game {
             this.renderer.render(this.scene, this.camera);
         }
 
-        // Continue animation loop
-        requestAnimationFrame(() => this.animate());
+        // Continue animation loop only if game is running
+        if (this.isRunning) {
+            requestAnimationFrame(() => this.animate());
+        }
     }
 
     update(deltaTime) {
@@ -260,19 +266,14 @@ export class Game {
             // Update snake if it exists
             if (this.snake) {
                 this.snake.update(deltaTime);
-                
-                // Check for pellet collisions
-                this.checkPelletCollisions();
             }
-
-            // Spawn new pellets
-            this.spawnPellet();
 
             // Update existing pellets
             this.pellets.forEach(pellet => pellet.update(deltaTime));
         }
 
-        if (this.gameManager) {
+        // Update game manager and other systems
+        if (this.gameManager && !this.isGameOver) {
             this.gameManager.update(deltaTime);
         }
 
@@ -413,28 +414,6 @@ export class Game {
         this.lastPelletSpawnTime = currentTime;
     }
 
-    checkPelletCollisions() {
-        if (!this.snake) return;
-
-        for (let i = this.pellets.length - 1; i >= 0; i--) {
-            const pellet = this.pellets[i];
-            const distance = this.snake.head.position.distanceTo(pellet.mesh.position);
-            
-            if (distance < 1) {
-                // Collect pellet
-                pellet.collect();
-                
-                // Update score
-                if (this.hud) {
-                    this.hud.updateScore(pellet.value);
-                }
-                
-                // Remove pellet from array
-                this.pellets.splice(i, 1);
-            }
-        }
-    }
-
     restart() {
         console.log('Game: Restarting game');
         
@@ -483,18 +462,37 @@ export class Game {
 
     gameOver() {
         console.log('Game: Game over triggered');
+        
+        // Only proceed if we're not already in game over state
+        if (this.isGameOver) return;
+        
+        // Set game over state
         this.isGameOver = true;
+        this.isRunning = false;
+        
+        // Clean up pellets
         this.cleanupPellets();
+        
+        // Show game over screen
         if (this.hud) {
             this.hud.showGameOver();
+        }
+        
+        // Stop the game loop
+        if (this.gameManager) {
+            this.gameManager.isRunning = false;
         }
     }
 
     cleanupPellets() {
-        // Remove all pellets from the scene
-        for (const pellet of this.pellets) {
-            this.scene.remove(pellet.mesh);
+        // Clean up any existing pellets
+        if (this.pellets) {
+            this.pellets.forEach(pellet => {
+                if (pellet && pellet.collect) {
+                    pellet.collect();
+                }
+            });
+            this.pellets = [];
         }
-        this.pellets = [];
     }
 } 

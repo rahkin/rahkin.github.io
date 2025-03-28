@@ -5,7 +5,7 @@ export class HUD {
         this.game = game;
         this.score = 0;
         this.highScore = localStorage.getItem('snakeHighScore') || 0;
-        this.activePowerUps = new Set();
+        this.activePowerUps = new Map();
         
         this.setupHUD();
     }
@@ -43,17 +43,40 @@ export class HUD {
     }
 
     addPowerUp(powerUpType) {
-        this.activePowerUps.add(powerUpType);
+        const powerUp = this.game.gameManager.powerUps.get(powerUpType);
+        if (powerUp) {
+            this.activePowerUps.set(powerUpType, Date.now() + powerUp.duration);
+        }
+    }
+
+    updatePowerUpDuration(powerUpType, duration) {
+        if (this.activePowerUps.has(powerUpType)) {
+            this.activePowerUps.set(powerUpType, Date.now() + duration);
+        }
     }
 
     removePowerUp(powerUpType) {
         this.activePowerUps.delete(powerUpType);
     }
 
+    getPowerUpColor(type) {
+        const colors = {
+            'Speed Boost': '#ff0000',
+            'Ghost Mode': '#00ffff',
+            'Size Multiplier': '#ffff00',
+            'Invincibility': '#ffd700',
+            'Point Multiplier': '#ff00ff',
+            'Time Slow': '#0000ff',
+            'Rainbow Trail': '#ff69b4',
+            'Magnet': '#808080'
+        };
+        return colors[type] || '#ffffff';
+    }
+
     render() {
         this.ctx.clearRect(0, 0, this.hudCanvas.width, this.hudCanvas.height);
         
-        // Set text style
+        // Set text style for scores
         this.ctx.fillStyle = '#ffffff';
         this.ctx.font = '24px Arial';
         this.ctx.textAlign = 'left';
@@ -65,8 +88,32 @@ export class HUD {
         // Draw active power-ups
         let powerUpY = 100;
         this.ctx.font = '18px Arial';
-        this.activePowerUps.forEach(powerUp => {
-            this.ctx.fillText(`Active: ${powerUp}`, 20, powerUpY);
+        
+        this.activePowerUps.forEach((endTime, powerUp) => {
+            const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+            const color = this.getPowerUpColor(powerUp);
+            
+            // Draw power-up icon
+            this.ctx.fillStyle = color;
+            this.ctx.beginPath();
+            this.ctx.arc(30, powerUpY + 8, 8, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Draw power-up name and time left
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillText(`${powerUp} (${timeLeft}s)`, 50, powerUpY + 12);
+            
+            // Draw duration bar
+            const barWidth = 100;
+            const barHeight = 4;
+            const duration = this.game.gameManager.powerUps.get(powerUp).duration;
+            const progress = Math.max(0, Math.min(1, timeLeft / (duration / 1000)));
+            
+            this.ctx.fillStyle = '#333333';
+            this.ctx.fillRect(50, powerUpY + 16, barWidth, barHeight);
+            this.ctx.fillStyle = color;
+            this.ctx.fillRect(50, powerUpY + 16, barWidth * progress, barHeight);
+            
             powerUpY += 30;
         });
     }

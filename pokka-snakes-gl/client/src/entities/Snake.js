@@ -1,196 +1,150 @@
 import * as THREE from 'three';
 
 export class Snake {
-    constructor(game, position) {
+    constructor(game, startPosition) {
         this.game = game;
-        this.speed = 8;
-        this.isGhost = false;
-        this.segments = [];
-        this.direction = new THREE.Vector3(0, 0, -1);
+        this.speed = 15;
+        this.direction = new THREE.Vector3(1, 0, 0);
         this.nextDirection = this.direction.clone();
+        this.segments = [];
+        this.segmentSpacing = 0.8;
+        this.isGhost = false;
+        this.isInvincible = false;
+        this.pointMultiplier = 1;
+        this.hasRainbowTrail = false;
+        this.hasMagnet = false;
         
-        // Create snake head with enhanced material
-        const headGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const headMaterial = new THREE.MeshStandardMaterial({
-            color: 0x00ff00,
-            emissive: 0x00ff00,
-            emissiveIntensity: 0.5,
-            metalness: 0.8,
-            roughness: 0.2,
-            envMapIntensity: 1
-        });
-        this.head = new THREE.Mesh(headGeometry, headMaterial);
-        this.head.castShadow = true;
-        this.head.receiveShadow = true;
-        
-        // Add head glow effect
-        this.headGlow = new THREE.PointLight(0x00ff00, 1, 3);
-        
-        // Create snake group and set its position
+        // Create snake group
         this.group = new THREE.Group();
-        this.group.position.copy(position);
         
-        // Position head relative to group (at local origin)
-        this.head.position.set(0, 0, 0);
-        this.headGlow.position.copy(this.head.position);
-        
+        // Create head
+        const headGeometry = new THREE.SphereGeometry(0.8, 16, 16);
+        this.material = new THREE.MeshPhongMaterial({
+            color: 0x00ff00,
+            emissive: 0x002200,
+            shininess: 30
+        });
+        this.head = new THREE.Mesh(headGeometry, this.material);
+        this.head.position.copy(startPosition);
         this.group.add(this.head);
-        this.group.add(this.headGlow);
         
         // Add initial segments
-        this.addSegment();
+        for (let i = 0; i < 5; i++) {
+            this.addSegment();
+        }
+    }
+
+    update(deltaTime) {
+        // Apply time scale if it exists
+        const timeScale = this.game.timeScale || 1;
+        const scaledDeltaTime = deltaTime * timeScale;
+        
+        // Update direction
+        this.direction.copy(this.nextDirection);
+        
+        // Store previous positions for segments
+        const positions = [this.head.position.clone()];
+        for (const segment of this.segments) {
+            positions.push(segment.position.clone());
+        }
+        
+        // Move head
+        const moveAmount = this.speed * scaledDeltaTime;
+        this.head.position.add(this.direction.clone().multiplyScalar(moveAmount));
+        
+        // Update segments with proper spacing
+        for (let i = 0; i < this.segments.length; i++) {
+            const segment = this.segments[i];
+            const targetPos = positions[i];
+            const direction = new THREE.Vector3()
+                .subVectors(targetPos, segment.position)
+                .normalize();
+            
+            // Add minimum distance check to prevent segments from getting too close
+            const currentDistance = segment.position.distanceTo(targetPos);
+            if (currentDistance > this.segmentSpacing) {
+                segment.position.add(direction.multiplyScalar(moveAmount));
+            }
+            
+            // Update segment color for rainbow trail
+            if (this.hasRainbowTrail) {
+                const hue = ((Date.now() / 1000 + i * 0.1) % 1);
+                segment.material.color.setHSL(hue, 1, 0.5);
+            }
+        }
+    }
+
+    checkCollisions() {
+        // Check wall collisions first
+        const headPos = this.head.position;
+        const wallDistance = 45; // Half the ground size minus margin
+        
+        if (Math.abs(headPos.x) > wallDistance || Math.abs(headPos.z) > wallDistance) {
+            console.log('Snake: Wall collision detected', {
+                x: headPos.x,
+                z: headPos.z,
+                wallDistance
+            });
+            return true;
+        }
+
+        // Then check self collisions
+        if (!this.isGhost) {
+            for (let i = 1; i < this.segments.length; i++) {
+                const segment = this.segments[i];
+                const distance = headPos.distanceTo(segment.position);
+                if (distance < 1.2) { // Increased collision radius
+                    console.log('Snake: Self collision detected', {
+                        distance,
+                        segmentIndex: i
+                    });
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     addSegment() {
-        const segmentGeometry = new THREE.BoxGeometry(0.9, 0.9, 0.9);
-        const segmentMaterial = new THREE.MeshStandardMaterial({
-            color: 0x00dd00,
-            emissive: 0x00dd00,
-            emissiveIntensity: 0.2,
-            metalness: 0.8,
-            roughness: 0.2,
-            envMapIntensity: 1
-        });
-        
+        const segmentGeometry = new THREE.SphereGeometry(0.7, 16, 16);
+        const segmentMaterial = this.material.clone();
         const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
-        segment.castShadow = true;
-        segment.receiveShadow = true;
-    
-        // Position the new segment
-        if (this.segments.length === 0) {
-            // First segment goes behind head with proper spacing
-            segment.position.copy(this.head.position).add(this.direction.clone().multiplyScalar(-1.05));
-        } else {
-            // Other segments go behind last segment with proper spacing
+        
+        // Position the new segment behind the last one
+        if (this.segments.length > 0) {
             const lastSegment = this.segments[this.segments.length - 1];
-            segment.position.copy(lastSegment.position).add(this.direction.clone().multiplyScalar(-1.05));
+            segment.position.copy(lastSegment.position);
+        } else {
+            segment.position.copy(this.head.position);
+            segment.position.sub(this.direction.multiplyScalar(this.segmentSpacing));
         }
-    
+        
         this.segments.push(segment);
         this.group.add(segment);
+    }
+
+    setDirection(newDirection) {
+        // Prevent 180-degree turns
+        if (this.direction.dot(newDirection) !== -1) {
+            this.nextDirection.copy(newDirection);
+        }
     }
 
     grow() {
         this.addSegment();
     }
 
-    update(deltaTime) {
-        // Update direction
-        this.direction.copy(this.nextDirection);
-        
-        // Store previous positions
-        const previousPositions = [this.head.position.clone()];
-        this.segments.forEach(segment => {
-            previousPositions.push(segment.position.clone());
-        });
-        
-        // Move head in local space
-        const moveAmount = this.speed * deltaTime;
-        this.head.position.add(this.direction.clone().multiplyScalar(moveAmount));
-        
-        // Update head glow position
-        this.headGlow.position.copy(this.head.position);
-        
-        // Check world boundaries in world space
-        const worldPos = new THREE.Vector3();
-        this.head.getWorldPosition(worldPos);
-        const worldSize = 45;
-        
-        if (Math.abs(worldPos.x) > worldSize || Math.abs(worldPos.z) > worldSize) {
-            if (this.game.gameManager) {
-                this.game.gameManager.gameOver();
-            }
-            return;
-        }
-        
-        // Update segments with proper spacing and color gradient
-        this.segments.forEach((segment, index) => {
-            const targetPos = previousPositions[index];
-            const currentPos = segment.position;
-            const spacing = 1.05; // Space between segments
-            
-            // Calculate the direction to the target
-            const direction = targetPos.clone().sub(currentPos);
-            direction.normalize();
-            
-            // Move segment to maintain proper spacing
-            segment.position.copy(targetPos).add(direction.multiplyScalar(-spacing));
-            
-            // Update segment color and glow based on position
-            const colorIntensity = 1 - (index / this.segments.length) * 0.5;
-            const hue = 0.3 + (index / this.segments.length) * 0.1; // Slight color shift
-            const color = new THREE.Color().setHSL(hue, 1, 0.5);
-            
-            segment.material.color.copy(color);
-            segment.material.emissive.copy(color);
-            segment.material.emissiveIntensity = 0.2 * colorIntensity;
-        });
-        
-        // Check for collisions with power-ups
-        this.checkPowerUpCollisions();
-    }
-
-    checkPowerUpCollisions() {
-        if (!this.game.powerUpSystem) return;
-        
-        // Get all power-up meshes in the scene
-        this.game.scene.traverse(object => {
-            if (object.userData.powerUpType) {
-                const distance = this.head.position.distanceTo(object.position);
-                if (distance < 1) {
-                    // Collect power-up
-                    this.game.powerUpSystem.activatePowerUp(object.userData.powerUpType, this);
-                    this.game.scene.remove(object);
-                    
-                    // Update score
-                    if (this.game.hud) {
-                        this.game.hud.updateScore(10);
-                    }
-                }
-            }
-        });
-    }
-
-    checkCollision(object = null) {
-        if (this.isGhost) return false;
-        
-        // Check wall collisions
-        const worldSize = 45;
-        if (Math.abs(this.head.position.x) > worldSize || 
-            Math.abs(this.head.position.z) > worldSize) {
-            return true;
-        }
-        
-        // Check object collision if provided
-        if (object) {
-            const distance = this.head.position.distanceTo(object.position);
-            return distance < 1;
-        }
-        
-        // Check self collisions (skip first few segments to prevent false collisions)
-        for (let i = 4; i < this.segments.length; i++) {
-            const segment = this.segments[i];
-            if (this.head.position.distanceTo(segment.position) < 1.05) { // Increased collision distance
-                return true;
-            }
-        }
-        
-        return false;
-    }
-
-    setDirection(newDirection) {
-        // Prevent 180-degree turns
-        if (this.direction.dot(newDirection) > -0.5) {
-            this.nextDirection.copy(newDirection);
-        }
-    }
-
     reset() {
         // Reset direction and properties
-        this.direction.set(0, 0, -1);
+        this.direction.set(1, 0, 0);
         this.nextDirection.copy(this.direction);
-        this.speed = 8;
+        this.speed = 15;
         this.isGhost = false;
+        this.isInvincible = false;
+        this.pointMultiplier = 1;
+        this.hasRainbowTrail = false;
+        this.hasMagnet = false;
     
         // Remove all body segments
         this.segments.forEach(segment => {
@@ -204,7 +158,6 @@ export class Snake {
         const startPosition = new THREE.Vector3(0, 0.5, 0);
         this.group.position.set(0, 0.5, 0);
         this.head.position.set(0, 0, 0);
-        this.headGlow.position.copy(this.head.position);
         
         // Add new initial segment
         this.addSegment();
