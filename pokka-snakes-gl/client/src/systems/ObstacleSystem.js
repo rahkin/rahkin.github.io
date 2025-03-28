@@ -8,6 +8,14 @@ export class ObstacleSystem {
         this.currentDifficulty = 1;
     }
 
+    start() {
+        console.log('ObstacleSystem: Starting');
+        // Reset any existing obstacles
+        this.cleanup();
+        // Initialize obstacles
+        this.initialize();
+    }
+
     createPatterns() {
         return {
             wall: {
@@ -70,10 +78,18 @@ export class ObstacleSystem {
         wall.receiveShadow = true;
         
         this.game.scene.add(wall);
-        this.obstacles.add({
+        const obstacle = {
             mesh: wall,
             type: 'wall',
+            position: wall.position.clone(),
+            radius: 2.0, // Increased wall collision radius to match visual size
             update: null
+        };
+        this.obstacles.add(obstacle);
+        console.log('ObstacleSystem: Created wall obstacle', {
+            position: obstacle.position.clone(),
+            radius: obstacle.radius,
+            size: new THREE.Vector3(2, 4, 2)
         });
     }
 
@@ -91,12 +107,21 @@ export class ObstacleSystem {
         spinner.castShadow = true;
         
         this.game.scene.add(spinner);
-        this.obstacles.add({
+        const obstacle = {
             mesh: spinner,
             type: 'spinner',
+            position: spinner.position.clone(),
+            radius: 3.0, // Spinner collision radius
             update: (deltaTime) => {
                 spinner.rotation.y += deltaTime * 2;
+                // Update position for collision detection
+                obstacle.position.copy(spinner.position);
             }
+        };
+        this.obstacles.add(obstacle);
+        console.log('ObstacleSystem: Created spinner obstacle', {
+            position: obstacle.position.clone(),
+            radius: obstacle.radius
         });
     }
 
@@ -117,14 +142,23 @@ export class ObstacleSystem {
         let time = 0;
         
         this.game.scene.add(obstacle);
-        this.obstacles.add({
+        const obstacleData = {
             mesh: obstacle,
             type: 'moving',
+            position: obstacle.position.clone(),
+            radius: 1.0, // Moving obstacle collision radius
             update: (deltaTime) => {
                 time += deltaTime;
                 obstacle.position.x = startPos.x + Math.sin(time) * 4;
                 obstacle.position.z = startPos.z + Math.cos(time) * 4;
+                // Update position for collision detection
+                obstacleData.position.copy(obstacle.position);
             }
+        };
+        this.obstacles.add(obstacleData);
+        console.log('ObstacleSystem: Created moving obstacle', {
+            position: obstacleData.position.clone(),
+            radius: obstacleData.radius
         });
     }
 
@@ -150,6 +184,7 @@ export class ObstacleSystem {
     }
 
     update(deltaTime) {
+        // Update obstacle positions and animations
         this.obstacles.forEach(obstacle => {
             if (obstacle.update) {
                 obstacle.update(deltaTime);
@@ -158,16 +193,28 @@ export class ObstacleSystem {
     }
 
     checkCollisions(snake) {
-        if (snake.isInvulnerable) return false;
+        if (!snake || !snake.head || snake.isInvulnerable) return false;
 
-        const headBoundingBox = new THREE.Box3()
-            .setFromObject(snake.head);
-        
+        const headRadius = 0.8; // Increased head radius for better collision detection
+        const headPosition = snake.head.position;
+
         for (const obstacle of this.obstacles) {
-            const obstacleBoundingBox = new THREE.Box3()
-                .setFromObject(obstacle.mesh);
-            
-            if (headBoundingBox.intersectsBox(obstacleBoundingBox)) {
+            if (!obstacle || !obstacle.position) continue;
+
+            const distance = headPosition.distanceTo(obstacle.position);
+            const minDistance = headRadius + obstacle.radius;
+
+            if (distance < minDistance) {
+                console.log('ObstacleSystem: Collision detected', {
+                    distance,
+                    minDistance,
+                    headPosition: headPosition.clone(),
+                    obstaclePosition: obstacle.position.clone(),
+                    obstacleRadius: obstacle.radius,
+                    headRadius: headRadius,
+                    obstacleType: obstacle.type,
+                    obstacleCount: this.obstacles.size
+                });
                 return true;
             }
         }

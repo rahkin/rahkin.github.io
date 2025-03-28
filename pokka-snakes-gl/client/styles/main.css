@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+#gameCanvas {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+.game-ui {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
+    z-index: 1000;
+}
+
+.score-container {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+}

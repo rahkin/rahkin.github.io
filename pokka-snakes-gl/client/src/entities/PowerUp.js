@@ -4,73 +4,73 @@ export class PowerUp {
     constructor(game, type) {
         this.game = game;
         this.type = type;
-        this.duration = this.getPowerUpDuration(type);
-        this.mesh = this.createPowerUpMesh(type);
-        this.position = this.getRandomPosition();
-        this.mesh.position.copy(this.position);
+        this.position = new THREE.Vector3(
+            (Math.random() - 0.5) * 80,
+            0.5,
+            (Math.random() - 0.5) * 80
+        );
+
+        this.createMesh();
         this.game.scene.add(this.mesh);
     }
 
-    createPowerUpMesh(type) {
-        const geometry = new THREE.OctahedronGeometry(0.5);
-        const material = new THREE.MeshStandardMaterial({
-            color: this.getPowerUpColor(type),
-            emissive: this.getPowerUpColor(type),
-            emissiveIntensity: 0.7,
-            metalness: 1,
-            roughness: 0.2,
+    createMesh() {
+        const colors = {
+            ghost: 0x808080,     // Gray
+            timeSlow: 0x00ffff,  // Cyan
+            magnet: 0xff00ff,    // Magenta
+            shield: 0xffff00     // Yellow
+        };
+
+        // Create main power-up mesh
+        const geometry = new THREE.SphereGeometry(0.5, 16, 16);
+        const material = new THREE.MeshPhongMaterial({
+            color: colors[this.type] || 0xffffff,
+            emissive: colors[this.type] || 0xffffff,
+            emissiveIntensity: 0.5,
             transparent: true,
             opacity: 0.8
         });
 
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.castShadow = true;
-        return mesh;
-    }
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh.position.copy(this.position);
+        this.mesh.castShadow = true;
+        this.mesh.receiveShadow = true;
 
-    getPowerUpColor(type) {
-        const colors = {
-            speed: 0x00ff00,
-            size: 0xff00ff,
-            ghost: 0x88ffff,
-            magnet: 0xffaa00,
-            shield: 0x0088ff
-        };
-        return colors[type] || colors.speed;
-    }
+        // Add glow effect
+        const glowGeometry = new THREE.SphereGeometry(0.6, 16, 16);
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: colors[this.type] || 0xffffff,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.BackSide
+        });
+        const glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+        this.mesh.add(glowMesh);
 
-    getPowerUpDuration(type) {
-        const durations = {
-            speed: 5000,
-            size: 8000,
-            ghost: 3000,
-            magnet: 6000,
-            shield: 4000
-        };
-        return durations[type] || 5000;
-    }
-
-    getRandomPosition() {
-        const range = 45;
-        return new THREE.Vector3(
-            (Math.random() - 0.5) * range * 2,
-            0.5,
-            (Math.random() - 0.5) * range * 2
-        );
+        // Add floating animation
+        this.initialY = this.position.y;
+        this.floatOffset = Math.random() * Math.PI * 2;
     }
 
     update(deltaTime) {
-        // Floating and rotation animation
-        this.mesh.position.y = this.position.y + 
-            Math.sin(Date.now() * 0.002) * 0.2;
-        this.mesh.rotation.y += deltaTime * 3;
-        this.mesh.rotation.x += deltaTime * 2;
+        // Update floating animation
+        const time = performance.now() * 0.001;
+        this.mesh.position.y = this.initialY + Math.sin(time + this.floatOffset) * 0.2;
+        this.mesh.rotation.y += deltaTime;
+
+        // Update glow effect
+        const glowIntensity = 0.3 + Math.sin(time * 2) * 0.1;
+        this.mesh.children[0].material.opacity = glowIntensity;
     }
 
     collect() {
+        // Remove from scene
         this.game.scene.remove(this.mesh);
-        if (this.mesh.geometry) this.mesh.geometry.dispose();
-        if (this.mesh.material) this.mesh.material.dispose();
+        this.mesh.geometry.dispose();
+        this.mesh.material.dispose();
+        this.mesh.children[0].geometry.dispose();
+        this.mesh.children[0].material.dispose();
     }
 
     applyEffect(snake) {
