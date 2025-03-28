@@ -1,0 +1,160 @@
+.debug-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 400px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    color: #fff;
+    font-family: monospace;
+    z-index: 9999;
+}
+
+.debug-container.hidden {
+    display: none;
+}
+
+.debug-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #00ff00;
+}
+
+.debug-header h2 {
+    margin: 0;
+    color: #00ff00;
+    font-size: 16px;
+}
+
+.debug-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.debug-controls button {
+    background: #00ff00;
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: monospace;
+}
+
+.debug-controls button:hover {
+    background: #00cc00;
+}
+
+.debug-content {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.debug-panels {
+    padding: 10px;
+}
+
+.debug-panel {
+    margin-bottom: 15px;
+}
+
+.debug-panel h3 {
+    margin: 0 0 5px 0;
+    color: #00ff00;
+    font-size: 14px;
+}
+
+.debug-panel-content {
+    font-size: 12px;
+}
+
+.debug-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 2px 0;
+}
+
+.debug-key {
+    color: #888;
+}
+
+.debug-value {
+    color: #fff;
+}
+
+.debug-console {
+    border-top: 1px solid #00ff00;
+    padding: 10px;
+}
+
+.debug-log {
+    height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.debug-log-entry {
+    padding: 2px 0;
+    border-bottom: 1px solid #222;
+}
+
+.debug-log-entry.error {
+    color: #ff0000;
+}
+
+.debug-log-entry.success {
+    color: #00ff00;
+}
+
+.debug-log-entry.info {
+    color: #ffffff;
+}
+
+.debug-log-entry.data {
+    color: #00ffff;
+}
+
+.debug-log-time {
+    color: #888;
+    margin-right: 5px;
+}
+
+.debug-input-container {
+    display: flex;
+}
+
+.debug-input {
+    width: 100%;
+    background: #111;
+    border: 1px solid #00ff00;
+    color: #fff;
+    padding: 5px;
+    font-family: monospace;
+}
+
+.debug-input:focus {
+    outline: none;
+    border-color: #00cc00;
+}
+
+/* Scrollbar styling */
+.debug-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.debug-content::-webkit-scrollbar-track {
+    background: #111;
+}
+
+.debug-content::-webkit-scrollbar-thumb {
+    background: #00ff00;
+    border-radius: 4px;
+}
+
+.debug-content::-webkit-scrollbar-thumb:hover {
+    background: #00cc00;
+} 

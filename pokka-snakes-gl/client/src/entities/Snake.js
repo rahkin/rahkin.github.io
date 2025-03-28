@@ -9,15 +9,29 @@ export class Snake {
         this.direction = new THREE.Vector3(0, 0, -1);
         this.nextDirection = this.direction.clone();
         
-        // Create snake head
+        // Create snake head with enhanced material
         const headGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const headMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+        const headMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5,
+            metalness: 0.8,
+            roughness: 0.2,
+            envMapIntensity: 1
+        });
         this.head = new THREE.Mesh(headGeometry, headMaterial);
         this.head.position.copy(position);
+        this.head.castShadow = true;
+        this.head.receiveShadow = true;
+        
+        // Add head glow effect
+        this.headGlow = new THREE.PointLight(0x00ff00, 1, 3);
+        this.headGlow.position.copy(this.head.position);
         
         // Create snake group
         this.group = new THREE.Group();
         this.group.add(this.head);
+        this.group.add(this.headGlow);
         
         // Add initial segments
         this.addSegment();
@@ -25,7 +39,14 @@ export class Snake {
 
     addSegment() {
         const segmentGeometry = new THREE.BoxGeometry(0.9, 0.9, 0.9);
-        const segmentMaterial = new THREE.MeshPhongMaterial({ color: 0x00dd00 });
+        const segmentMaterial = new THREE.MeshStandardMaterial({
+            color: 0x00dd00,
+            emissive: 0x00dd00,
+            emissiveIntensity: 0.2,
+            metalness: 0.8,
+            roughness: 0.2,
+            envMapIntensity: 1
+        });
         
         const segment = new THREE.Mesh(segmentGeometry, segmentMaterial);
         segment.castShadow = true;
@@ -63,7 +84,10 @@ export class Snake {
         const moveAmount = this.speed * deltaTime;
         this.head.position.add(this.direction.clone().multiplyScalar(moveAmount));
         
-        // Update segments with proper spacing
+        // Update head glow position
+        this.headGlow.position.copy(this.head.position);
+        
+        // Update segments with proper spacing and color gradient
         this.segments.forEach((segment, index) => {
             const targetPos = previousPositions[index];
             const currentPos = segment.position;
@@ -76,8 +100,13 @@ export class Snake {
             // Move segment to maintain proper spacing
             segment.position.copy(targetPos).add(direction.multiplyScalar(-spacing));
             
-            // Update segment color intensity
+            // Update segment color and glow based on position
             const colorIntensity = 1 - (index / this.segments.length) * 0.5;
+            const hue = 0.3 + (index / this.segments.length) * 0.1; // Slight color shift
+            const color = new THREE.Color().setHSL(hue, 1, 0.5);
+            
+            segment.material.color.copy(color);
+            segment.material.emissive.copy(color);
             segment.material.emissiveIntensity = 0.2 * colorIntensity;
         });
         

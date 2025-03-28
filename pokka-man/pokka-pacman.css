@@ -1,0 +1,386 @@
+/* Pokka Theme Colors */
+:root {
+    --pokka-orange: #FFA500;       /* Orange accent from image */
+    --pokka-cyan: #40E0D0;         /* Turquoise/cyan accent */
+    --pokka-dark: #000000;         /* Dark background */
+    --pokka-pink: #ff9ec5;         /* Pink accent for characters */
+    --pokka-white: #FFFFFF;        /* White text */
+    --pokka-shadow: rgba(0, 0, 0, 0.3);
+    --background-gradient: linear-gradient(135deg, var(--pokka-orange) 0%, var(--pokka-cyan) 100%);
+    --pokka-grid: rgba(255, 255, 255, 0.1);
+}
+
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Press Start 2P', cursive;
+    background: var(--pokka-dark);
+    background-image: 
+        linear-gradient(45deg, var(--pokka-grid) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--pokka-grid) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--pokka-grid) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--pokka-grid) 75%);
+    background-size: 20px 20px;
+    color: var(--pokka-white);
+}
+
+/* Game Container */
+.game-container {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
+    max-width: 90vw;
+    margin: 20px;
+    border: 2px solid var(--pokka-cyan);
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.header-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    max-height: 150px;
+    object-fit: contain;
+}
+
+/* Navigation */
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 1rem 0;
+}
+
+.nav-button {
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
+    border: none;
+    padding: 10px 20px;
+    font-family: 'One Little Font', cursive;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--pokka-shadow);
+}
+
+.nav-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--pokka-shadow);
+}
+
+.back-button {
+    background: var(--pokka-cyan);
+    color: var(--pokka-dark);
+    font-weight: bold;
+    position: relative;
+    padding-left: 35px;
+}
+
+.back-button::before {
+    content: "←";
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+}
+
+.back-button:hover {
+    background: var(--pokka-orange);
+}
+
+/* Game control buttons (Start Game, How to Play, Leaderboard) */
+#startBtn, #tutorialBtn, #leaderboardBtn {
+    font-family: 'One Little Font', cursive;
+    font-size: 1.2em;
+}
+
+/* Score Container */
+.score-container {
+    color: var(--pokka-white);
+    font-size: 1.2em;
+    text-align: center;
+    margin: 1rem 0;
+    text-shadow: 2px 2px 4px var(--pokka-shadow);
+}
+
+.score-update {
+    animation: scoreUpdate 0.3s ease;
+    background: var(--background-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Game Area */
+.game-area {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+#gameCanvas {
+    border: 2px solid var(--pokka-cyan);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.2);
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.controls-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.mobile-controls button {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid var(--pokka-cyan);
+    color: var(--pokka-white);
+    font-size: 1.5em;
+    padding: 15px;
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mobile-controls button:hover {
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+.modal.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--pokka-dark);
+    padding: 2rem;
+    border-radius: 20px;
+    border: 2px solid var(--pokka-cyan);
+    text-align: center;
+    min-width: 300px;
+    box-shadow: 0 0 30px rgba(64, 224, 208, 0.3);
+}
+
+.modal-content h2 {
+    background: var(--background-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.5em;
+    margin-bottom: 1rem;
+}
+
+.modal-content p {
+    margin: 1rem 0;
+    color: var(--pokka-white);
+    font-size: 0.8em;
+    line-height: 1.5;
+}
+
+/* Form Elements */
+#playerName {
+    background: var(--pokka-dark);
+    border: 2px solid var(--pokka-cyan);
+    padding: 0.5rem 1rem;
+    font-size: 1em;
+    color: var(--pokka-white);
+    border-radius: 25px;
+    margin: 1rem 0;
+    width: 80%;
+    text-align: center;
+    font-family: inherit;
+}
+
+.menu-button {
+    background: var(--pokka-dark);
+    color: var(--pokka-white);
+    border: 2px solid var(--pokka-cyan);
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0.5rem;
+    box-shadow: 0 2px 8px var(--pokka-shadow);
+    font-family: inherit;
+}
+
+.menu-button:hover {
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(64, 224, 208, 0.5);
+}
+
+/* Animations */
+@keyframes scoreUpdate {
+    0% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+}
+
+/* Game Character Styles */
+.pokka-character {
+    animation: float 2s ease-in-out infinite;
+}
+
+.ghost {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Power-up Effects */
+.power-up {
+    animation: pulse 0.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px var(--pokka-cyan));
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .game-container {
+        padding: 1rem;
+        margin: 10px;
+        max-width: 100vw;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .nav-button {
+        width: 100%;
+        text-align: center;
+        padding: 12px 20px;
+        font-size: 0.9em;
+    }
+    
+    .mobile-controls {
+        display: flex;
+        margin-top: 15px;
+        position: relative;
+        z-index: 100;
+    }
+
+    .controls-row button {
+        width: 70px;
+        height: 70px;
+        font-size: 2em;
+        background: rgba(0, 0, 0, 0.85);
+        border: 3px solid var(--pokka-cyan);
+        box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
+        margin: 5px;
+    }
+    
+    .controls-row button:active {
+        background: var(--background-gradient);
+        color: var(--pokka-dark);
+        transform: scale(0.95);
+    }
+    
+    #gameCanvas {
+        width: 100%;
+        height: auto;
+        max-height: 80vh;
+        object-fit: contain;
+        touch-action: none;
+    }
+
+    .score-container {
+        font-size: 1em;
+        margin: 0.5rem 0;
+    }
+
+    .modal-content {
+        width: 90%;
+        margin: 0 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .menu-button {
+        padding: 12px 20px;
+        margin: 8px;
+        min-width: 120px;
+    }
+
+    .back-button {
+        padding-left: 30px;
+    }
+    
+    .back-button::before {
+        left: 12px;
+    }
+}
+
+/* Prevent scrolling while touching game controls */
+body.playing {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+} 

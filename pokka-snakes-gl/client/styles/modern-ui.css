@@ -1,0 +1,219 @@
+:root {
+    --primary-color: #00ff00;
+    --secondary-color: #008800;
+    --background-color: rgba(0, 0, 0, 0.9);
+    --text-color: #ffffff;
+    --accent-color: #00ffff;
+}
+
+.game-hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.score-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.score {
+    background: var(--background-color);
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 2px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.score-label {
+    color: var(--text-color);
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.score-value {
+    color: var(--primary-color);
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.multiplier {
+    background: var(--background-color);
+    padding: 5px 15px;
+    border-radius: 15px;
+    color: var(--text-color);
+    font-size: 20px;
+    transition: all 0.3s;
+}
+
+.multiplier.active {
+    background: var(--primary-color);
+    color: var(--background-color);
+    transform: scale(1.1);
+}
+
+.power-up-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.power-up-indicator {
+    background: var(--background-color);
+    padding: 10px;
+    border-radius: 15px;
+    border: 2px solid var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.power-up-icon {
+    font-size: 24px;
+}
+
+.power-up-timer {
+    width: 100px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.timer-bar {
+    width: 100%;
+    height: 100%;
+    background: var(--primary-color);
+    transform-origin: left;
+}
+
+.combo-meter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    text-align: center;
+}
+
+.combo-bar {
+    height: 4px;
+    background: var(--accent-color);
+    border-radius: 2px;
+    margin-bottom: 5px;
+}
+
+.combo-text {
+    color: var(--text-color);
+    font-size: 16px;
+    text-shadow: 0 0 10px var(--accent-color);
+}
+
+/* Menu Styles */
+.menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.menu.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.menu-content {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 40px;
+    border-radius: 20px;
+    border: 2px solid var(--primary-color);
+    text-align: center;
+    transform: translateY(20px);
+    transition: transform 0.3s;
+}
+
+.menu.active .menu-content {
+    transform: translateY(0);
+}
+
+.game-title {
+    color: var(--primary-color);
+    font-size: 48px;
+    margin-bottom: 40px;
+    text-shadow: 0 0 20px var(--primary-color);
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.menu-button {
+    background: var(--secondary-color);
+    color: var(--text-color);
+    border: none;
+    padding: 15px 30px;
+    font-size: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-button:hover {
+    background: var(--primary-color);
+    transform: scale(1.05);
+}
+
+.difficulty-select {
+    margin-top: 20px;
+}
+
+.difficulty-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.difficulty-button {
+    background: var(--background-color);
+    color: var(--text-color);
+    border: 2px solid var(--secondary-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.difficulty-button.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+@keyframes timer {
+    from { width: 100%; }
+    to { width: 0%; }
+} 

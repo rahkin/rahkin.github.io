@@ -1,0 +1,26 @@
+.performance-hud {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    color: #00ff00;
+    font-size: 12px;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.metric {
+    margin: 2px 0;
+    white-space: nowrap;
+}
+
+.performance-hud.warning .metric {
+    color: #ffff00;
+}
+
+.performance-hud.critical .metric {
+    color: #ff0000;
+} 

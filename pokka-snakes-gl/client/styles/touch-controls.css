@@ -1,0 +1,64 @@
+.touch-controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 1000;
+}
+
+.touch-area {
+    position: relative;
+    width: 180px;
+    height: 180px;
+}
+
+.touch-button {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 255, 0, 0.3);
+    border: 2px solid rgba(0, 255, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.touch-button.up {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.touch-button.right {
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.touch-button.down {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.touch-button.left {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.touch-button:active {
+    background: rgba(0, 255, 0, 0.5);
+}
+
+@media (min-width: 768px) {
+    .touch-controls {
+        display: none !important;
+    }
+} 

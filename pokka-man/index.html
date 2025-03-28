@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>PokkaMan Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=One+Little+Font&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="pokka-pacman.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <img src="../assets/images/pokka_header.png" alt="PokkaMan Header" class="header-image">
+        </div>
+
+        <nav class="nav-links">
+            <a href="../" class="nav-button back-button">Back to Arcade</a>
+            <button id="startBtn" class="nav-button">Start Game</button>
+            <button id="tutorialBtn" class="nav-button">How to Play</button>
+            <button id="leaderboardBtn" class="nav-button">Leaderboard</button>
+            <a href="https://pancakeswap.finance/swap?outputCurrency=0xb82f36fb31bF0Be873879C031DE4150d40AfDda9&inputCurrency=BNB" class="nav-button" target="_blank">Trade $pokka</a>
+            <a href="https://aiai.now" class="nav-button" target="_blank">AIAI Society</a>
+            <a href="https://x.com/Pokka_AIAI" class="nav-button" target="_blank">Pokka's X</a>
+        </nav>
+
+        <div class="score-container">
+            Score: <span id="score">0</span>
+        </div>
+
+        <div class="game-area">
+            <canvas id="gameCanvas" width="840" height="930" tabindex="0"></canvas>
+        </div>
+
+        <div class="mobile-controls">
+            <div class="controls-row">
+                <button id="upBtn">↑</button>
+            </div>
+            <div class="controls-row">
+                <button id="leftBtn">←</button>
+                <button id="downBtn">↓</button>
+                <button id="rightBtn">→</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Player Name Modal -->
+    <div id="playerNameModal" class="modal">
+        <div class="modal-content">
+            <h2>Enter Your Name</h2>
+            <input type="text" id="playerName" maxlength="15" placeholder="Your name...">
+            <button id="submitName" class="menu-button">Start</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button id="playAgain" class="menu-button">Play Again</button>
+            <button class="close-modal menu-button">Close</button>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="modal">
+        <div class="modal-content">
+            <h2>How to Play</h2>
+            <p>Use arrow keys or on-screen controls to move Pokka.</p>
+            <p>Collect all dots while avoiding ghosts!</p>
+            <p>Power pellets make ghosts vulnerable.</p>
+            <button class="close-modal menu-button">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal">
+        <div class="modal-content">
+            <h2>High Scores</h2>
+            <div id="leaderboardList"></div>
+            <button class="close-modal menu-button">Close</button>
+        </div>
+    </div>
+
+    <script type="module" src="pokka-pacman.js"></script>
+</body>
+</html> 

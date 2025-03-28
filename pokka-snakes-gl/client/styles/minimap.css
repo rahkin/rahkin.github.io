@@ -1,0 +1,71 @@
+.minimap-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: move;
+    z-index: 1000;
+    transition: transform 0.2s;
+}
+
+.minimap-container:hover {
+    transform: scale(1.05);
+}
+
+.minimap-container canvas {
+    display: block;
+    border-radius: 3px;
+}
+
+.minimap-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border-radius: 3px;
+    box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.minimap-legend {
+    position: absolute;
+    bottom: -80px;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #00ff00;
+    border-radius: 3px;
+    padding: 5px;
+    transition: opacity 0.2s;
+}
+
+.minimap-legend.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 3px 0;
+}
+
+.legend-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.legend-text {
+    color: white;
+    font-size: 12px;
+}
+
+.minimap-container.hidden {
+    display: none;
+} 

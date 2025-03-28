@@ -1,0 +1,90 @@
+.tutorial-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.tutorial-popup {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    pointer-events: auto;
+    max-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.tutorial-popup.hidden {
+    display: none;
+}
+
+.tutorial-title {
+    color: #00ff00;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.tutorial-message {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.tutorial-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.tutorial-controls button {
+    background: #00ff00;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tutorial-controls button:hover {
+    background: #00cc00;
+    transform: scale(1.05);
+}
+
+.tutorial-skip {
+    background: #333 !important;
+    color: white !important;
+}
+
+.tutorial-highlight {
+    position: absolute;
+    border: 2px solid #00ff00;
+    border-radius: 5px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.tutorial-highlight.hidden {
+    display: none;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 255, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+}
+
+.tutorial-highlight:not(.hidden) {
+    animation: pulse 2s infinite;
+} 

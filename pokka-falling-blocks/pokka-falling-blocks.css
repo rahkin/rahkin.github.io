@@ -1,0 +1,325 @@
+:root {
+    --pokka-orange: #FFA500;
+    --pokka-cyan: #40E0D0;
+    --pokka-dark: #000000;
+    --pokka-pink: #ff9ec5;
+    --pokka-white: #FFFFFF;
+    --pokka-shadow: rgba(0, 0, 0, 0.3);
+    --background-gradient: linear-gradient(135deg, var(--pokka-orange) 0%, var(--pokka-cyan) 100%);
+    --pokka-grid: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Press Start 2P', cursive;
+    background: var(--pokka-dark);
+    background-image: 
+        linear-gradient(45deg, var(--pokka-grid) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--pokka-grid) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--pokka-grid) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--pokka-grid) 75%);
+    background-size: 20px 20px;
+    color: var(--pokka-white);
+}
+
+.game-container {
+    max-width: 1200px;
+    width: 100%;
+    padding: 2rem;
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.header img {
+    max-width: 100%;
+    height: auto;
+    max-height: 150px;
+    margin-bottom: 1rem;
+}
+
+/* Navigation Styles */
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 1rem 0;
+}
+
+.nav-button {
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
+    border: none;
+    padding: 10px 20px;
+    font-family: 'One Little Font', cursive;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 25px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--pokka-shadow);
+}
+
+.nav-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--pokka-shadow);
+}
+
+.back-button {
+    background: var(--pokka-cyan);
+    color: var(--pokka-dark);
+    font-weight: bold;
+    position: relative;
+    padding-left: 35px;
+}
+
+.back-button::before {
+    content: "←";
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2em;
+}
+
+.back-button:hover {
+    background: var(--pokka-orange);
+}
+
+/* Game Area Styles */
+.game-area {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.game-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: left;
+    min-width: 200px;
+}
+
+#gameCanvas {
+    background: rgba(0, 0, 0, 0.8);
+    border: 3px solid var(--pokka-cyan);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.3);
+}
+
+#nextCanvas {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--pokka-pink);
+    border-radius: 10px;
+    margin-top: 0.5rem;
+}
+
+.score-container, .level-container {
+    font-family: 'One Little Font', cursive;
+    font-size: 1.2em;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    border: 2px solid var(--pokka-cyan);
+}
+
+.next-piece h3 {
+    font-family: 'One Little Font', cursive;
+    font-size: 1em;
+    color: var(--pokka-pink);
+    margin-bottom: 0.5rem;
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.controls-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.controls-row button {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5em;
+    background: rgba(0, 0, 0, 0.85);
+    border: 3px solid var(--pokka-cyan);
+    color: var(--pokka-white);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
+}
+
+.controls-row button:active {
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
+    transform: scale(0.95);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--pokka-dark);
+    padding: 2rem;
+    border-radius: 20px;
+    border: 3px solid var(--pokka-cyan);
+    text-align: center;
+    max-width: 90%;
+    width: 400px;
+    box-shadow: 0 0 30px rgba(64, 224, 208, 0.3);
+}
+
+.modal h2 {
+    font-family: 'One Little Font', cursive;
+    color: var(--pokka-cyan);
+    margin-bottom: 1rem;
+}
+
+.modal p {
+    margin: 1rem 0;
+    font-size: 0.8em;
+    line-height: 1.6;
+}
+
+.menu-button {
+    background: var(--background-gradient);
+    color: var(--pokka-dark);
+    border: none;
+    padding: 10px 20px;
+    font-family: 'One Little Font', cursive;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 25px;
+    margin: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px var(--pokka-shadow);
+}
+
+.menu-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--pokka-shadow);
+}
+
+input[type="text"] {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid var(--pokka-cyan);
+    color: var(--pokka-white);
+    padding: 10px;
+    font-family: 'One Little Font', cursive;
+    font-size: 1em;
+    width: 100%;
+    margin: 1rem 0;
+    border-radius: 10px;
+    text-align: center;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
+}
+
+#leaderboardList {
+    margin: 1rem 0;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+    font-size: 0.8em;
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 1rem;
+    }
+
+    .header h1 {
+        font-size: 2em;
+    }
+
+    .game-area {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .game-info {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .mobile-controls {
+        display: flex;
+    }
+
+    .controls-row button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2em;
+    }
+
+    .modal-content {
+        width: 90%;
+        margin: 0 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .menu-button {
+        padding: 12px 20px;
+        margin: 8px;
+        min-width: 120px;
+    }
+
+    .back-button {
+        padding-left: 30px;
+    }
+    
+    .back-button::before {
+        left: 12px;
+    }
+}
+
+/* Prevent scrolling while touching game controls */
+body.playing {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+} 

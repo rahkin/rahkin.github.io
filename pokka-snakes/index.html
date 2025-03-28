@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokka's Snakes</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Start Screen -->
+    <div id="startScreen" class="overlay">
+        <div class="menu-container">
+            <h1>Pokka's Snakes</h1>
+            <div class="input-container">
+                <input type="text" id="playerName" placeholder="Enter your name" maxlength="15">
+            </div>
+            <button id="startButton" class="button">Play</button>
+            <div class="high-scores-container">
+                <h2>High Scores</h2>
+                <div id="highScores"></div>
+            </div>
+            <div class="instructions">
+                <h3>How to Play</h3>
+                <ul>
+                    <li>Move mouse to steer</li>
+                    <li>Hold left click to boost</li>
+                    <li>Collect pellets to grow</li>
+                    <li>Avoid other snakes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game UI -->
+    <div id="gameUI" class="game-ui">
+        <div class="score-container">
+            <span class="score-label">Score:</span>
+            <span id="score">0</span>
+        </div>
+        <button id="fullscreenButton" class="icon-button">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="white" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="overlay" style="display: none;">
+        <div class="menu-container">
+            <h2>Game Over</h2>
+            <div class="final-score">
+                Score: <span id="finalScore">0</span>
+            </div>
+            <button id="playAgainButton" class="button">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/snake.js"></script>
+    <script src="js/bot.js"></script>
+    <script src="js/pellet.js"></script>
+    <script src="js/camera.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html> 
