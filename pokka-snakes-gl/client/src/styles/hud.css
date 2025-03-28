@@ -1,0 +1,54 @@
+.game-hud {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    font-family: 'Arial', sans-serif;
+    color: white;
+    text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+}
+
+.score-display {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.high-score {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.powerup-indicator {
+    display: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    animation: pulse 1s infinite;
+}
+
+.powerup-indicator.speed {
+    background: rgba(255, 165, 0, 0.7);
+}
+
+.powerup-indicator.ghost {
+    background: rgba(128, 128, 255, 0.7);
+}
+
+.powerup-indicator.size {
+    background: rgba(255, 0, 255, 0.7);
+}
+
+.minimap {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+} 
