@@ -1,16 +1,9 @@
 import { Game } from './Game';
 import './styles/hud.css';
 
-// Import Three.js dynamically
-const loadThree = async () => {
-    const THREE = await import('three');
-    return THREE;
-};
-
 try {
     // Wait for the DOM to be fully loaded
-    window.addEventListener('load', async () => {
-        const THREE = await loadThree();
+    window.addEventListener('load', () => {
         const game = new Game();
         game.start();
 
