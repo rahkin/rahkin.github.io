@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { AdvancedCameraController } from './camera/AdvancedCameraController';
 import { Snake } from './entities/Snake';
 import { Pellet } from './entities/Pellet';
