@@ -1,1 +1,93 @@
- 
+@font-face {
+    font-family: 'One Little Font';
+    src: url('/fonts/OneLittleFont.ttf') format('truetype');
+}
+
+:root {
+    /* Brand Colors */
+    --pokka-mint: #3EE0B1;
+    --pokka-orange: #FAA70D;
+    --pokka-pink: #E179DA;
+    --pokka-white: #FFFFFF;
+    --pokka-gray: #888888;
+    --pokka-black: #000000;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Canva Sans', sans-serif;
+    background-color: var(--pokka-black);
+    color: var(--pokka-white);
+}
+
+.game-title {
+    font-family: 'One Little Font', sans-serif;
+    color: var(--pokka-white);
+    text-align: center;
+    font-size: 3em;
+    margin: 20px 0;
+}
+
+.score {
+    font-family: 'One Little Font', sans-serif;
+    color: var(--pokka-mint);
+    font-size: 2em;
+}
+
+.menu-button {
+    font-family: 'Canva Sans', sans-serif;
+    background-color: var(--pokka-mint);
+    color: var(--pokka-black);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.menu-button:hover {
+    background-color: var(--pokka-orange);
+}
+
+.game-over {
+    font-family: 'One Little Font', sans-serif;
+    color: var(--pokka-pink);
+    font-size: 4em;
+    text-align: center;
+}
+
+.high-score {
+    color: var(--pokka-orange);
+    font-size: 1.5em;
+}
+
+.power-up {
+    color: var(--pokka-pink);
+    font-weight: bold;
+}
+
+/* Game UI overlay */
+.game-ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    padding: 20px;
+}
+
+/* Menu overlay */
+.menu-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+} 

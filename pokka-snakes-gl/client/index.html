@@ -4,14 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokka's Snakes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Canva+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'One Little Font';
+            src: url('/fonts/OneLittleFont.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
             background: #000;
+            font-family: 'Canva Sans', Arial, sans-serif;
         }
         canvas {
             display: block;
+        }
+
+        /* Preload fonts */
+        .font-preload {
+            position: absolute;
+            left: -9999px;
+            visibility: hidden;
         }
     </style>
     <!-- Third-party libraries -->
@@ -20,6 +36,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js"></script>
 </head>
 <body>
+    <!-- Font preload elements -->
+    <div class="font-preload">
+        <span style="font-family: 'One Little Font';">.</span>
+        <span style="font-family: 'Canva Sans';">.</span>
+    </div>
     <script type="module" src="/src/main.js"></script>
 </body>
 </html> 

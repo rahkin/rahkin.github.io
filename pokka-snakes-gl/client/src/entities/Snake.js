@@ -39,6 +39,9 @@ export class Snake {
         for (let i = 0; i < 10; i++) {
             this.positionHistory.push(startPosition.clone());
         }
+
+        // Add trail effect
+        this.createTrail();
         
         // Set up input handling
         this.setupInput();
@@ -64,24 +67,93 @@ export class Snake {
     }
 
     createHead(startPosition) {
-        const headGeometry = new THREE.SphereGeometry(0.8, 16, 16);
+        const headGeometry = new THREE.SphereGeometry(0.8, 32, 32);
         this.material = new THREE.MeshPhongMaterial({
-            color: 0x00ff00,
-            emissive: 0x002200,
-            shininess: 30
+            color: 0x3EE0B1,
+            emissive: 0x3EE0B1,
+            emissiveIntensity: 0.4,
+            shininess: 50,
+            transparent: true,
+            opacity: 0.9
         });
+
+        // Create glow effect for head
+        const glowGeometry = new THREE.SphereGeometry(1.0, 32, 32);
+        const glowMaterial = new THREE.MeshPhongMaterial({
+            color: 0x3EE0B1,
+            emissive: 0x3EE0B1,
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.BackSide
+        });
+
         this.head = new THREE.Mesh(headGeometry, this.material);
+        this.headGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+        
         this.head.position.copy(startPosition);
+        this.headGlow.position.copy(startPosition);
+        
         this.collisionRadius = 0.9;
         this.group.add(this.head);
+        this.group.add(this.headGlow);
+    }
+
+    createTrail() {
+        // Create trail geometry
+        const trailGeometry = new THREE.BufferGeometry();
+        const trailPoints = [];
+        const trailColors = [];
+        
+        // Create initial trail points
+        for (let i = 0; i < 50; i++) {
+            trailPoints.push(0, 0, 0);
+            trailColors.push(0.24, 0.88, 0.69); // Mint color (0x3EE0B1)
+        }
+        
+        trailGeometry.setAttribute('position', new THREE.Float32BufferAttribute(trailPoints, 3));
+        trailGeometry.setAttribute('color', new THREE.Float32BufferAttribute(trailColors, 3));
+        
+        const trailMaterial = new THREE.LineBasicMaterial({
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.5,
+            linewidth: 1
+        });
+        
+        this.trail = new THREE.Line(trailGeometry, trailMaterial);
+        this.game.scene.add(this.trail);
+        
+        // Store trail points for updating
+        this.trailPoints = [];
+        for (let i = 0; i < 50; i++) {
+            this.trailPoints.push(this.head.position.clone());
+        }
+    }
+
+    updateTrail() {
+        // Update trail points
+        this.trailPoints.push(this.head.position.clone());
+        this.trailPoints.shift();
+        
+        // Update trail geometry
+        const positions = this.trail.geometry.attributes.position.array;
+        for (let i = 0; i < this.trailPoints.length; i++) {
+            const point = this.trailPoints[i];
+            positions[i * 3] = point.x;
+            positions[i * 3 + 1] = point.y;
+            positions[i * 3 + 2] = point.z;
+        }
+        
+        this.trail.geometry.attributes.position.needsUpdate = true;
     }
 
     addSegmentAtPosition(position) {
         const geometry = new THREE.SphereGeometry(0.7, 16, 16);
         const material = new THREE.MeshPhongMaterial({
-            color: 0x00ff00,
-            emissive: 0x00ff00,
-            emissiveIntensity: 0.3
+            color: 0x3EE0B1, // Pokka's mint color
+            emissive: 0x3EE0B1,
+            emissiveIntensity: 0.2
         });
         
         const segment = new THREE.Mesh(geometry, material);
@@ -151,11 +223,11 @@ export class Snake {
         // Create ghost trail effect
         const trailGeometry = new THREE.SphereGeometry(0.4, 8, 8);
         const trailMaterial = new THREE.MeshPhongMaterial({
-            color: 0x00ff00,
+            color: 0x3EE0B1, // Pokka's mint color
             transparent: true,
             opacity: 0.3,
-            emissive: 0x00ff00,
-            emissiveIntensity: 0.5
+            emissive: 0x3EE0B1,
+            emissiveIntensity: 0.3
         });
         
         this.ghostTrails = [];
@@ -249,6 +321,17 @@ export class Snake {
     update(deltaTime) {
         if (!this.game.isRunning || this.game.gameManager.isGameOver || !this.movementEnabled) {
             return;
+        }
+
+        // Update trail
+        this.updateTrail();
+
+        // Update head glow
+        if (this.headGlow) {
+            this.headGlow.position.copy(this.head.position);
+            // Add subtle animation to glow
+            const glowScale = 1 + Math.sin(performance.now() * 0.003) * 0.1;
+            this.headGlow.scale.set(glowScale, glowScale, glowScale);
         }
 
         // Set initialized flag after more frames

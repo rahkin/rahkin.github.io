@@ -61,33 +61,35 @@ export class HUD {
 
     getPowerUpColor(type) {
         const colors = {
-            'Speed Boost': '#ff0000',
-            'Ghost Mode': '#00ffff',
-            'Size Multiplier': '#ffff00',
-            'Invincibility': '#ffd700',
-            'Point Multiplier': '#ff00ff',
-            'Time Slow': '#0000ff',
-            'Rainbow Trail': '#ff69b4',
-            'Magnet': '#808080'
+            'Speed Boost': '#3EE0B1', // Mint
+            'Ghost Mode': '#E179DA',  // Pink
+            'Size Multiplier': '#FAA70D', // Orange
+            'Invincibility': '#3EE0B1', // Mint
+            'Point Multiplier': '#E179DA', // Pink
+            'Time Slow': '#FAA70D', // Orange
+            'Rainbow Trail': '#E179DA', // Pink
+            'Magnet': '#3EE0B1' // Mint
         };
-        return colors[type] || '#ffffff';
+        return colors[type] || '#FFFFFF';
     }
 
     render() {
         this.ctx.clearRect(0, 0, this.hudCanvas.width, this.hudCanvas.height);
         
         // Set text style for scores
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '24px Arial';
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = '24px "One Little Font", Arial';
         this.ctx.textAlign = 'left';
 
         // Draw score
+        this.ctx.fillStyle = '#3EE0B1'; // Mint color for score
         this.ctx.fillText(`Score: ${this.score}`, 20, 40);
+        this.ctx.fillStyle = '#FAA70D'; // Orange color for high score
         this.ctx.fillText(`High Score: ${this.highScore}`, 20, 70);
 
         // Draw active power-ups
         let powerUpY = 100;
-        this.ctx.font = '18px Arial';
+        this.ctx.font = '18px "Canva Sans", Arial';
         
         this.activePowerUps.forEach((endTime, powerUp) => {
             const timeLeft = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
@@ -100,7 +102,7 @@ export class HUD {
             this.ctx.fill();
             
             // Draw power-up name and time left
-            this.ctx.fillStyle = '#ffffff';
+            this.ctx.fillStyle = '#FFFFFF';
             this.ctx.fillText(`${powerUp} (${timeLeft}s)`, 50, powerUpY + 12);
             
             // Draw duration bar
@@ -155,31 +157,47 @@ export class HUD {
             border-radius: 15px;
             color: white;
             text-align: center;
-            font-family: Arial, sans-serif;
+            font-family: 'One Little Font', Arial, sans-serif;
             pointer-events: auto;
         `;
 
         const heading = document.createElement('h1');
         heading.textContent = 'Game Over';
-        heading.style.cssText = 'margin: 0 0 20px 0; font-size: 36px;';
+        heading.style.cssText = `
+            margin: 0 0 20px 0;
+            font-size: 36px;
+            font-family: 'One Little Font', Arial, sans-serif;
+            color: #E179DA;
+        `;
 
         const scoreText = document.createElement('p');
         scoreText.textContent = `Score: ${this.score}`;
-        scoreText.style.cssText = 'font-size: 24px; margin: 10px 0;';
+        scoreText.style.cssText = `
+            font-size: 24px;
+            margin: 10px 0;
+            font-family: 'Canva Sans', Arial, sans-serif;
+            color: #3EE0B1;
+        `;
 
         const highScoreText = document.createElement('p');
         highScoreText.textContent = `High Score: ${this.highScore}`;
-        highScoreText.style.cssText = 'font-size: 24px; margin: 10px 0;';
+        highScoreText.style.cssText = `
+            font-size: 24px;
+            margin: 10px 0;
+            font-family: 'Canva Sans', Arial, sans-serif;
+            color: #FAA70D;
+        `;
 
         const restartButton = document.createElement('button');
         restartButton.textContent = 'Play Again';
         restartButton.style.cssText = `
-            background: #4CAF50;
-            color: white;
+            background: #3EE0B1;
+            color: black;
             border: none;
             padding: 10px 20px;
             font-size: 18px;
-            border-radius: 5px;
+            font-family: 'Canva Sans', Arial, sans-serif;
+            border-radius: 25px;
             cursor: pointer;
             margin-top: 20px;
             pointer-events: auto;
@@ -187,11 +205,11 @@ export class HUD {
         `;
         
         restartButton.onmouseover = () => {
-            restartButton.style.background = '#45a049';
+            restartButton.style.background = '#FAA70D';
         };
         
         restartButton.onmouseout = () => {
-            restartButton.style.background = '#4CAF50';
+            restartButton.style.background = '#3EE0B1';
         };
 
         // Add elements to content
