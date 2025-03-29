@@ -266,6 +266,11 @@ export class Snake {
         // Store the next direction - will be applied on next update
         this.nextDirection = newDirection;
         
+        // Trigger turn sound and effect
+        if (this.game && this.head) {
+            this.game.onSnakeTurn(this.head.position);
+        }
+        
         console.log('Snake: Direction changed', {
             oldDirection: this.direction.clone(),
             newDirection: this.nextDirection.clone(),
@@ -348,7 +353,13 @@ export class Snake {
 
         // Update direction from stored next direction
         if (this.nextDirection) {
+            const oldDirection = this.direction.clone();
             this.direction.copy(this.nextDirection);
+            
+            // If direction actually changed, trigger turn sound
+            if (!oldDirection.equals(this.direction) && this.game && this.head) {
+                this.game.onSnakeTurn(this.head.position);
+            }
         }
 
         // Store previous positions

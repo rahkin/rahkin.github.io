@@ -5,6 +5,8 @@ import { Pellet } from './entities/Pellet';
 import { GameManager } from './systems/GameManager';
 import { HUD } from './ui/HUD';
 import { PowerUpSystem } from './systems/PowerUpSystem';
+import { WeatherSystem } from './systems/WeatherSystem';
+import { AudioManager } from './systems/AudioManager';
 // Import other systems as needed
 // import { NetworkManager } from './network/NetworkManager';
 // import { GameStateManager } from './systems/GameStateManager';
@@ -14,6 +16,9 @@ export class Game {
     constructor() {
         // Initialize core components first
         this.initializeCore();
+        
+        // Initialize audio manager
+        this.audioManager = new AudioManager();
         
         this.lastTime = 0;
         this.isRunning = false;
@@ -25,6 +30,8 @@ export class Game {
         this.dayNightCycle = 0; // Track day/night cycle
         this.particles = []; // Store particle effects
         this.snakeTrail = []; // Store snake trail particles
+        this.weatherChangeInterval = 30; // Change weather every 30 seconds
+        this.lastWeatherChange = 0;
 
         // Initialize input manager with direction vectors
         this.inputManager = {
@@ -41,6 +48,9 @@ export class Game {
             }
         };
 
+        // Initialize weather system
+        this.weatherSystem = new WeatherSystem(this.scene);
+        
         // Then initialize game systems
         this.initializeSystems();
 
@@ -249,36 +259,33 @@ export class Game {
     }
 
     createCoffeeShopEnvironment() {
-        // Create coffee shop floor with white base
-        const floorTexture = new THREE.TextureLoader().load('/textures/wood_floor.jpg');
-        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-        floorTexture.repeat.set(20, 20);
-        
-        const shopFloorGeometry = new THREE.PlaneGeometry(100, 100);
-        const shopFloorMaterial = new THREE.MeshStandardMaterial({
-            color: 0xFFFFFF,
-            map: floorTexture,
+        // Create floor
+        const floorGeometry = new THREE.PlaneGeometry(100, 100);
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8B4513, // Brown color as fallback
             roughness: 0.8,
-            metalness: 0.2,
-            side: THREE.DoubleSide
+            metalness: 0.2
         });
-        
-        // Create four floor sections around the play area with proper positioning
-        const floorSections = [
-            { pos: [-100, 0, 0], rot: [0, 0, 0] },    // Left
-            { pos: [100, 0, 0], rot: [0, 0, 0] },     // Right
-            { pos: [0, 0, -100], rot: [0, 0, 0] },    // Front
-            { pos: [0, 0, 100], rot: [0, 0, 0] }      // Back
-        ];
 
-        floorSections.forEach(section => {
-            const floor = new THREE.Mesh(shopFloorGeometry, shopFloorMaterial);
-            floor.position.set(...section.pos);
-            floor.rotation.x = -Math.PI / 2;
-            floor.position.y = 0; // Keep coffee shop floor slightly below play area
-            floor.receiveShadow = true;
-            this.scene.add(floor);
-        });
+        // Try to load wood texture
+        const textureLoader = new THREE.TextureLoader();
+        textureLoader.load(
+            './textures/wood_floor.jpg',
+            (texture) => {
+                floorMaterial.map = texture;
+                floorMaterial.needsUpdate = true;
+            },
+            undefined,
+            (error) => {
+                console.warn('Failed to load wood floor texture:', error);
+                // Keep using the default brown color
+            }
+        );
+
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = 0;
+        this.scene.add(floor);
 
         // Add a base floor to cover any gaps
         const baseFloorGeometry = new THREE.PlaneGeometry(300, 300);
@@ -616,6 +623,9 @@ export class Game {
             this.isGameOver = false;
             this.lastTime = performance.now();
             
+            // Start background music
+            this.audioManager.play('background');
+            
             // Start animation loop
             this.animate();
             
@@ -704,6 +714,18 @@ export class Game {
                 this.camera.position.y = 15;
                 this.camera.lookAt(this.snake.head.position);
             }
+        }
+
+        // Update weather system
+        this.weatherSystem.update(deltaTime);
+
+        // Randomly change weather
+        if (this.currentTime - this.lastWeatherChange > this.weatherChangeInterval) {
+            const weatherTypes = ['sunny', 'rain', 'snow'];
+            const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+            this.weatherSystem.setWeather(randomWeather);
+            this.audioManager.setWeather(randomWeather); // Update weather sounds
+            this.lastWeatherChange = this.currentTime;
         }
 
         // Always render the scene
@@ -808,6 +830,11 @@ export class Game {
 
         if (this.gameManager) {
             this.gameManager.cleanup();
+        }
+
+        // Cleanup audio manager
+        if (this.audioManager) {
+            this.audioManager.cleanup();
         }
     }
 
@@ -1165,6 +1192,7 @@ export class Game {
             velocityScale: 1,
             verticalForce: 0.5
         });
+        this.audioManager.play('turn');
     }
 
     onGameOver(position) {
@@ -1176,6 +1204,7 @@ export class Game {
             verticalForce: 3,
             emissive: true
         });
+        this.audioManager.play('gameOver');
     }
 
     onSpeedBoost(position) {
@@ -1186,6 +1215,7 @@ export class Game {
             verticalForce: 1,
             emissive: true
         });
+        this.audioManager.play('powerUp');
     }
 
     addAmbientParticles() {

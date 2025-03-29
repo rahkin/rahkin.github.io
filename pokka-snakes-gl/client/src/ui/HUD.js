@@ -6,6 +6,11 @@ export class HUD {
         this.score = 0;
         this.highScore = localStorage.getItem('snakeHighScore') || 0;
         this.activePowerUps = new Map();
+        this.isGameOver = false;
+        this.audioStatus = document.createElement('div');
+        this.audioStatus.className = 'audio-status';
+        this.audioStatus.innerHTML = '🔇 Click to enable audio';
+        document.body.appendChild(this.audioStatus);
         
         this.setupHUD();
     }
@@ -120,11 +125,30 @@ export class HUD {
         });
     }
 
+    update() {
+        // Update audio status
+        if (this.game.audioManager) {
+            if (!this.game.audioManager.hasUserInteracted) {
+                this.audioStatus.style.display = 'block';
+            } else if (this.game.audioManager.isMuted) {
+                this.audioStatus.innerHTML = '🔇 Audio muted';
+                this.audioStatus.style.display = 'block';
+            } else {
+                this.audioStatus.style.display = 'none';
+            }
+        }
+        
+        // ... rest of update method ...
+    }
+
     cleanup() {
         if (this.hudCanvas && this.hudCanvas.parentNode) {
             this.hudCanvas.parentNode.removeChild(this.hudCanvas);
         }
         window.removeEventListener('resize', this.resize);
+        if (this.audioStatus) {
+            this.audioStatus.remove();
+        }
     }
 
     showGameOver() {

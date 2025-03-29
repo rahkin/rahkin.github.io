@@ -181,8 +181,8 @@ export class GameManager {
         this.spawnPellet();
         
         // Play sound effect if available
-        if (this.game.audio?.playSound) {
-            this.game.audio.playSound('collect');
+        if (this.game.audio?.play) {
+            this.game.audio.play('eat');
         }
     }
 
@@ -194,7 +194,7 @@ export class GameManager {
         powerUp.collect();
         
         // Play sound effect if available
-        this.game.audio?.playSound('powerup');
+        this.game.audio?.play('powerUp');
     }
 
     spawnPellet() {
@@ -260,6 +260,11 @@ export class GameManager {
                 collisionChecksEnabled: this.collisionChecksEnabled
             }
         });
+        
+        // Play game over sound
+        if (this.game.audioManager) {
+            this.game.audioManager.play('gameOver');
+        }
         
         // Disable collision checks first
         this.collisionChecksEnabled = false;

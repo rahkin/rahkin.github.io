@@ -2,8 +2,10 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
+    base: './',
+    publicDir: 'public',
     server: {
-        port: 5173,
+        port: 3002,
         proxy: {
             '/socket.io': {
                 target: 'ws://localhost:3000',
@@ -21,8 +23,13 @@ export default defineConfig({
         include: ['three']
     },
     build: {
+        outDir: 'dist',
+        assetsDir: 'assets',
         commonjsOptions: {
             include: [/three/]
         }
+    },
+    esbuild: {
+        target: 'es2020'
     }
 }); 
