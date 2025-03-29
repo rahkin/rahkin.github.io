@@ -3,19 +3,26 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export class AdvancedCameraController {
     constructor(game) {
+        if (!game || !game.camera) {
+            throw new Error('Game and camera must be initialized');
+        }
+
         this.game = game;
         this.camera = game.camera;
         this.target = null;
-        this.offset = new THREE.Vector3(0, 30, 40);
+        this.offset = new THREE.Vector3(0, 15, 20);
         this.currentPosition = new THREE.Vector3();
         this.currentLookAt = new THREE.Vector3();
+        this.smoothFactor = 0.1;
+        this.defaultPosition = new THREE.Vector3(0, 15, 20);
+        this.defaultLookAt = new THREE.Vector3(0, 0, 0);
         
         this.settings = {
-            followSpeed: 5.0,
-            rotationSpeed: 2.0,
+            followSpeed: 2.0,  // Reduced for smoother following
+            rotationSpeed: 1.0,
             zoomSpeed: 1.0,
-            minZoom: 20,
-            maxZoom: 100,
+            minZoom: 10,
+            maxZoom: 50,
             shakeMagnitude: 0.5,
             tiltRange: { min: 0.3, max: 1.2 }
         };
@@ -27,20 +34,25 @@ export class AdvancedCameraController {
             trauma: 0
         };
 
+        // Initialize position
+        this.currentPosition.copy(this.camera.position);
+        this.currentLookAt.set(0, 0, 0);
+
         // Bind methods
         this.update = this.update.bind(this);
         this.setTarget = this.setTarget.bind(this);
         this.cleanup = this.cleanup.bind(this);
+        this.reset = this.reset.bind(this);
 
-        this.setupControls();
+        // Setup controls after initialization
+        if (game.renderer) {
+            this.setupControls();
+        } else {
+            console.warn('Renderer not initialized, skipping OrbitControls setup');
+        }
     }
 
     setupControls() {
-        if (!this.game || !this.game.renderer) {
-            console.error('Game or renderer not initialized');
-            return;
-        }
-
         try {
             this.orbitControls = new OrbitControls(
                 this.camera, 
@@ -57,7 +69,7 @@ export class AdvancedCameraController {
             
             this.orbitControls.enabled = false;
         } catch (error) {
-            console.error('Error setting up OrbitControls:', error);
+            console.warn('Error setting up OrbitControls:', error);
         }
     }
 
@@ -75,6 +87,16 @@ export class AdvancedCameraController {
             // Update camera position and look at
             this.camera.position.copy(this.currentPosition);
             this.camera.lookAt(this.currentLookAt);
+
+            // Log camera position for debugging
+            if (Math.random() < 0.01) { // Only log occasionally
+                console.log('Camera: Updated position', {
+                    cameraPosition: this.camera.position.clone(),
+                    targetPosition: this.target.position.clone(),
+                    offset: this.offset.clone(),
+                    currentLookAt: this.currentLookAt.clone()
+                });
+            }
 
             // Update orbit controls if enabled
             if (this.orbitControls && this.orbitControls.enabled) {
@@ -107,13 +129,20 @@ export class AdvancedCameraController {
     }
 
     setTarget(target) {
+        if (!target) return;
+        
         this.target = target;
-        if (target) {
-            this.currentPosition.copy(target.position).add(this.offset);
-            this.currentLookAt.copy(target.position);
-            this.camera.position.copy(this.currentPosition);
-            this.camera.lookAt(this.currentLookAt);
-        }
+        // Immediately update position to avoid initial camera jump
+        this.currentPosition.copy(target.position).add(this.offset);
+        this.currentLookAt.copy(target.position);
+        this.camera.position.copy(this.currentPosition);
+        this.camera.lookAt(this.currentLookAt);
+        
+        console.log('Camera: Set new target', {
+            targetPosition: target.position.clone(),
+            cameraPosition: this.camera.position.clone(),
+            offset: this.offset.clone()
+        });
     }
 
     cleanup() {
@@ -121,5 +150,17 @@ export class AdvancedCameraController {
             this.orbitControls.dispose();
             this.orbitControls = null;
         }
+    }
+
+    reset() {
+        // Reset camera to default position and orientation
+        this.camera.position.copy(this.defaultPosition);
+        this.currentLookAt.copy(this.defaultLookAt);
+        this.camera.lookAt(this.defaultLookAt);
+        
+        console.log('Camera: Reset to default position', {
+            position: this.camera.position.clone(),
+            lookAt: this.currentLookAt.clone()
+        });
     }
 } 

@@ -75,29 +75,28 @@ export class GameManager {
         console.log('GameManager: Starting game');
         this.isRunning = true;
         this.isGameOver = false;
+        this.score = 0;
+        this.pellets = [];
+        this.totalPellets = 0;
+        this.pelletSpawnInterval = 2;
+        this.lastPelletSpawnTime = 0;
         this.collisionChecksEnabled = false;
-        this.startTime = performance.now();
-        this.lastSpawnTime = Date.now();
-        
-        // Initialize systems
-        this.powerUpSystem.start();
         this.obstacleSystem.start();
+        this.powerUpSystem.start();
 
         // Spawn initial pellets
         this.spawnInitialPellets();
 
-        // Set up event listeners
-        this.setupEventListeners();
-
-        // Delay enabling collision checks
+        // Delay enabling collision checks until after snake initialization
         setTimeout(() => {
+            this.collisionChecksEnabled = true;
             console.log('GameManager: Enabling collision checks', {
                 hasObstacleSystem: !!this.obstacleSystem,
-                obstacleCount: this.obstacleSystem.obstacles.size,
-                snakePosition: this.game.snake.position.clone()
+                obstacleCount: this.obstacleSystem.obstacles.length,
+                snakePosition: this.game.snake?.head?.position,
+                frameCount: this.game.frameCount
             });
-            this.collisionChecksEnabled = true;
-        }, 5000); // Reduced delay to 5 seconds
+        }, 1000); // Wait 1 second before enabling collision checks
     }
 
     stop() {
@@ -143,40 +142,11 @@ export class GameManager {
 
         // Check wall collisions first
         if (this.game.snake.checkWallCollision()) {
-            console.log('GameManager: Wall collision detected', {
-                snakePosition: this.game.snake.position.clone(),
-                snakeLength: this.game.snake.segments.length,
-                direction: this.game.snake.direction.clone(),
-                isRunning: this.isRunning,
-                collisionChecksEnabled: this.collisionChecksEnabled
-            });
-            this.gameOver();
             return;
         }
 
         // Check obstacle collisions
         if (this.game.snake.checkObstacleCollision()) {
-            console.log('GameManager: Obstacle collision detected', {
-                snakePosition: this.game.snake.position.clone(),
-                snakeLength: this.game.snake.segments.length,
-                direction: this.game.snake.direction.clone(),
-                isRunning: this.isRunning,
-                collisionChecksEnabled: this.collisionChecksEnabled
-            });
-            this.gameOver();
-            return;
-        }
-
-        // Check self collisions
-        if (this.game.snake.checkSelfCollision()) {
-            console.log('GameManager: Self collision detected', {
-                snakePosition: this.game.snake.position.clone(),
-                snakeLength: this.game.snake.segments.length,
-                direction: this.game.snake.direction.clone(),
-                isRunning: this.isRunning,
-                collisionChecksEnabled: this.collisionChecksEnabled
-            });
-            this.gameOver();
             return;
         }
 
@@ -229,17 +199,20 @@ export class GameManager {
 
     spawnPellet() {
         const type = Math.random() < 0.2 ? 'bonus' : 'normal';
+        const worldSize = this.game.worldSize || 45;
+        const halfSize = worldSize / 2;
         const position = new THREE.Vector3(
-            (Math.random() - 0.5) * 80,
+            (Math.random() - 0.5) * worldSize,
             0.5,
-            (Math.random() - 0.5) * 80
+            (Math.random() - 0.5) * worldSize
         );
         const pellet = new Pellet(this.game, position, type);
         this.pellets.push(pellet);
         console.log('GameManager: Spawned new pellet', {
             type,
             position: position.clone(),
-            totalPellets: this.pellets.length
+            totalPellets: this.pellets.length,
+            worldSize
         });
     }
 
@@ -277,7 +250,7 @@ export class GameManager {
         if (this.isGameOver) return;
         
         console.log('GameManager: Game over triggered', {
-            snakePosition: this.game.snake.position.clone(),
+            snakePosition: this.game.snake.head.position.clone(),
             snakeLength: this.game.snake.segments.length,
             isRunning: this.isRunning,
             collisionChecksEnabled: this.collisionChecksEnabled,

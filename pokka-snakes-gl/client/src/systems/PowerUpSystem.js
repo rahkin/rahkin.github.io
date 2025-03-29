@@ -3,7 +3,19 @@ import * as THREE from 'three';
 export class PowerUpSystem {
     constructor(game) {
         this.game = game;
+        this.powerUps = [];
+        this.isActive = false;
         this.activePowerUps = new Map();
+        this.powerUpTypes = {
+            ghost: {
+                duration: 5,
+                effect: this.activateGhostMode.bind(this)
+            },
+            speedBoost: {
+                duration: 3,
+                effect: this.activateSpeedBoost.bind(this)
+            }
+        };
         this.powerUpDurations = {
             ghost: 5000,    // 5 seconds
             timeSlow: 8000, // 8 seconds
@@ -16,11 +28,62 @@ export class PowerUpSystem {
     }
 
     start() {
-        console.log('PowerUpSystem: Starting');
-        // Reset any existing power-ups
-        this.cleanup();
-        // Initialize magnet effect
+        console.log('PowerUpSystem: Starting system');
+        this.isActive = true;
+        this.spawnPowerUp();
+    }
+
+    stop() {
+        console.log('PowerUpSystem: Stopping system');
+        this.isActive = false;
+        this.clearActivePowerUps();
+        this.clearPowerUps();
+    }
+
+    cleanup() {
+        console.log('PowerUpSystem: Cleaning up system');
+        this.stop();
+        
+        // Clean up any remaining power-up effects
+        if (this.ghostAura) {
+            this.removeGhostEffect();
+        }
+        
+        if (this.shieldMesh) {
+            this.deactivateShield();
+        }
+        
+        // Clear all arrays and maps
+        this.powerUps = [];
+        this.activePowerUps.clear();
         this.magnetActive = false;
+    }
+
+    reset() {
+        console.log('PowerUpSystem: Resetting system');
+        this.stop();
+        this.powerUps = [];
+        this.activePowerUps = new Map();
+    }
+
+    clearActivePowerUps() {
+        console.log('PowerUpSystem: Clearing active power-ups');
+        for (const [type, powerUp] of this.activePowerUps) {
+            this.deactivatePowerUp(type);
+        }
+        this.activePowerUps.clear();
+    }
+
+    clearPowerUps() {
+        console.log('PowerUpSystem: Clearing power-up objects');
+        this.powerUps.forEach(powerUp => {
+            if (powerUp.mesh) {
+                this.game.scene.remove(powerUp.mesh);
+                powerUp.mesh.geometry.dispose();
+                powerUp.mesh.material.dispose();
+            }
+        });
+        this.powerUps = [];
     }
 
     activatePowerUp(type) {
@@ -74,14 +137,51 @@ export class PowerUpSystem {
     }
 
     activateGhostMode() {
-        if (this.game.snake) {
-            // Make snake semi-transparent
-            this.game.snake.group.traverse((child) => {
-                if (child.material) {
-                    child.material.transparent = true;
-                    child.material.opacity = 0.5;
-                }
-            });
+        if (!this.game.snake) return;
+        
+        console.log('PowerUpSystem: Activating ghost mode');
+        
+        // Enable ghost mode on snake
+        this.game.snake.setGhostMode(true);
+        
+        // Add visual effect
+        this.createGhostEffect();
+        
+        // Store cleanup function
+        this.activePowerUps.get('ghost').cleanup = () => {
+            console.log('PowerUpSystem: Deactivating ghost mode');
+            this.game.snake.setGhostMode(false);
+            this.removeGhostEffect();
+        };
+    }
+
+    createGhostEffect() {
+        // Create ghost aura effect
+        const auraGeometry = new THREE.SphereGeometry(1.5, 16, 16);
+        const auraMaterial = new THREE.MeshPhongMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.2,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5,
+            side: THREE.BackSide
+        });
+        
+        this.ghostAura = new THREE.Mesh(auraGeometry, auraMaterial);
+        this.ghostAura.position.copy(this.game.snake.head.position);
+        this.game.scene.add(this.ghostAura);
+        
+        // Add pulsing animation
+        this.ghostAura.userData.pulseSpeed = 0.003;
+        this.ghostAura.userData.pulseScale = 0.2;
+    }
+
+    removeGhostEffect() {
+        if (this.ghostAura) {
+            this.game.scene.remove(this.ghostAura);
+            this.ghostAura.geometry.dispose();
+            this.ghostAura.material.dispose();
+            this.ghostAura = null;
         }
     }
 
@@ -92,9 +192,9 @@ export class PowerUpSystem {
                 if (child.material) {
                     child.material.transparent = false;
                     child.material.opacity = 1;
-            }
-        });
-    }
+                }
+            });
+        }
     }
 
     activateTimeSlow() {
@@ -122,10 +222,10 @@ export class PowerUpSystem {
             const shieldGeometry = new THREE.SphereGeometry(1.5, 32, 32);
             const shieldMaterial = new THREE.MeshPhongMaterial({
                 color: 0x00ffff,
-            transparent: true,
-            opacity: 0.3,
-            side: THREE.BackSide
-        });
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.BackSide
+            });
             this.shieldMesh = new THREE.Mesh(shieldGeometry, shieldMaterial);
             this.game.snake.head.add(this.shieldMesh);
         }
@@ -185,10 +285,23 @@ export class PowerUpSystem {
 
     update(deltaTime) {
         // Update active power-ups
-        for (const [type, data] of this.activePowerUps.entries()) {
-            const elapsed = performance.now() - data.startTime;
-            if (elapsed >= data.duration) {
+        for (const [type, powerUp] of this.activePowerUps) {
+            const elapsed = performance.now() - powerUp.startTime;
+            
+            // Check if power-up duration has expired
+            if (elapsed >= powerUp.duration) {
+                console.log(`PowerUpSystem: Power-up ${type} expired`);
                 this.deactivatePowerUp(type);
+            }
+            
+            // Update ghost aura position if active
+            if (type === 'ghost' && this.ghostAura && this.game.snake) {
+                this.ghostAura.position.copy(this.game.snake.head.position);
+                
+                // Update pulse animation
+                const scale = 1 + Math.sin(Date.now() * this.ghostAura.userData.pulseSpeed) * 
+                    this.ghostAura.userData.pulseScale;
+                this.ghostAura.scale.set(scale, scale, scale);
             }
         }
 
@@ -221,11 +334,11 @@ export class PowerUpSystem {
         return this.activePowerUps.has(type);
     }
 
-    cleanup() {
-        // Deactivate all active power-ups
-        for (const [type] of this.activePowerUps.entries()) {
-            this.deactivatePowerUp(type);
-        }
-        this.activePowerUps.clear();
+    spawnPowerUp() {
+        // Implementation of spawning a power-up
+    }
+
+    activateSpeedBoost() {
+        // Implementation of activating speed boost
     }
 } 

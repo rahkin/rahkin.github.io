@@ -82,7 +82,7 @@ export class ObstacleSystem {
             mesh: wall,
             type: 'wall',
             position: wall.position.clone(),
-            radius: 2.0, // Increased wall collision radius to match visual size
+            radius: 1.5, // Adjusted collision radius for better detection
             update: null
         };
         this.obstacles.add(obstacle);
@@ -111,7 +111,7 @@ export class ObstacleSystem {
             mesh: spinner,
             type: 'spinner',
             position: spinner.position.clone(),
-            radius: 3.0, // Spinner collision radius
+            radius: 4.0, // Increased spinner collision radius
             update: (deltaTime) => {
                 spinner.rotation.y += deltaTime * 2;
                 // Update position for collision detection
@@ -145,8 +145,9 @@ export class ObstacleSystem {
         const obstacleData = {
             mesh: obstacle,
             type: 'moving',
+            isMoving: true, // Explicitly mark as moving obstacle
             position: obstacle.position.clone(),
-            radius: 1.0, // Moving obstacle collision radius
+            radius: 1.5,
             update: (deltaTime) => {
                 time += deltaTime;
                 obstacle.position.x = startPos.x + Math.sin(time) * 4;
@@ -158,7 +159,8 @@ export class ObstacleSystem {
         this.obstacles.add(obstacleData);
         console.log('ObstacleSystem: Created moving obstacle', {
             position: obstacleData.position.clone(),
-            radius: obstacleData.radius
+            radius: obstacleData.radius,
+            isMoving: obstacleData.isMoving
         });
     }
 
@@ -192,27 +194,47 @@ export class ObstacleSystem {
         });
     }
 
-    checkCollisions(snake) {
-        if (!snake || !snake.head || snake.isInvulnerable) return false;
+    checkCollisions(target) {
+        // Handle both snake objects and direct positions with radius
+        let position, radius = 0.8; // Default radius if not specified
 
-        const headRadius = 0.8; // Increased head radius for better collision detection
-        const headPosition = snake.head.position;
+        if (target instanceof THREE.Vector3) {
+            position = target;
+        } else if (target && target.position) {
+            position = target.position;
+            radius = target.radius || radius;
+        } else if (target && target.head) {
+            if (target.isInvulnerable || target.isGhost) return false;
+            position = target.head.position;
+            radius = target.collisionRadius || radius;
+        } else {
+            console.error('ObstacleSystem: Invalid target for collision check');
+            return false;
+        }
 
         for (const obstacle of this.obstacles) {
             if (!obstacle || !obstacle.position) continue;
 
-            const distance = headPosition.distanceTo(obstacle.position);
-            const minDistance = headRadius + obstacle.radius;
+            // Adjust collision radius based on obstacle type
+            let effectiveRadius = obstacle.radius;
+            if (obstacle.type === 'moving' || obstacle.isMoving) {
+                effectiveRadius *= 0.6; // Reduce collision radius for moving obstacles
+            }
+
+            const distance = position.distanceTo(obstacle.position);
+            const minDistance = radius + effectiveRadius;
 
             if (distance < minDistance) {
                 console.log('ObstacleSystem: Collision detected', {
                     distance,
                     minDistance,
-                    headPosition: headPosition.clone(),
+                    targetPosition: position.clone(),
+                    targetRadius: radius,
                     obstaclePosition: obstacle.position.clone(),
-                    obstacleRadius: obstacle.radius,
-                    headRadius: headRadius,
+                    obstacleRadius: effectiveRadius,
+                    originalRadius: obstacle.radius,
                     obstacleType: obstacle.type,
+                    isMoving: obstacle.isMoving,
                     obstacleCount: this.obstacles.size
                 });
                 return true;
@@ -245,5 +267,31 @@ export class ObstacleSystem {
 
     cleanup() {
         this.reset();
+    }
+
+    isNearMovingObstacle(position) {
+        if (!position || !this.obstacles) return false;
+
+        // Check each obstacle
+        for (const obstacle of this.obstacles) {
+            // Skip if not a moving obstacle
+            if (!obstacle.type === 'moving' && !obstacle.isMoving) continue;
+
+            // Calculate distance to moving obstacle
+            const distance = position.distanceTo(obstacle.position);
+            
+            // Consider "near" if within 4 units
+            if (distance < 4) {
+                console.log('ObstacleSystem: Near moving obstacle', {
+                    distance,
+                    position: position.clone(),
+                    obstaclePosition: obstacle.position.clone(),
+                    obstacleType: obstacle.type
+                });
+                return true;
+            }
+        }
+
+        return false;
     }
 } 
