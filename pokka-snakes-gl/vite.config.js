@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
     base: '/pokka-snakes-gl/',
@@ -11,13 +12,19 @@ export default defineConfig({
             }
         }
     },
+    resolve: {
+        alias: {
+            'three': resolve(__dirname, 'node_modules/three'),
+            '@': resolve(__dirname, 'client/src')
+        }
+    },
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
         sourcemap: true,
         rollupOptions: {
             input: {
-                main: 'index.html'
+                main: resolve(__dirname, 'index.html')
             }
         }
     }
